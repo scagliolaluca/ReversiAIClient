@@ -1,0 +1,10 @@
+#ifndef LOGGING_H
+#define LOGGING_H
+
+#define CONNECTION_LOGGING
+#define LOAD_LOGGING
+
+#define CLIENT_LOGGING
+#define BOARD_LOGGING
+
+#endif  // LOGGING_H

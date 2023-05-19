@@ -1,0 +1,52 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# VSCode Folder
+.vscode
+
+# Bin Folder
+bin
+
+# other folders
+documentation
+reversi_binaries
+maps
+doxygen.tag
+
+# MAC OS ignore .DS_STORE
+.DS_STORE
+
+# Tex 
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.gz
+*.toc
