@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------------------------------------------------------
 
 ## Executable name
-TARGET_NAME ?= client
+TARGET_NAME ?= client03
 DEBUG_NAME ?= debug.app
 ## Directorys
 SRC_DIR := src
