@@ -5,7 +5,50 @@ void Moves::getRandomMove(uint8_t& x, uint8_t& y, uint8_t** board, uint8_t playe
 
     Moves::populateValidMoves(validMoves, board, playerNumber);
     if (!validMoves.empty()) {
-        Move m = validMoves.at(std::rand() % validMoves.size());
+
+        std::cout << "ValidMoveCount: " << validMoves.size() << std::endl; //count how many moves you can make
+        std::cout << "FieldCount: " << Heuristics::getScore(board, playerNumber) << std::endl; //count how many stones you have
+
+        //count emty fields and other players stones
+        for(int player = 0; player <= GameDetails::playerCount; player++){
+            if (player == playerNumber) {
+                continue;
+            }
+            if (player == 0){
+                std::cout << "There are " << Heuristics::getScore(board, player) << " empty fields!" << std::endl;
+                continue;
+            }
+            std::cout << player << "- Players Cout: " << Heuristics::getScore(board, player) << std::endl;
+        }
+
+        //copy board to uint8_t pointer
+        uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
+
+        //add greedy AI (move to get most stones after placing)
+        int highestState = 100;
+        Move m = validMoves.at(0);
+        for(int i = 0; i < int(validMoves.size()); i++) {
+            Heuristics::copyBoard(boardcopy, board);
+            Move n = validMoves.at(i);
+            std::cout << "Move: " << int(n.x) << " " << int(n.y);
+            Moves::makeMove(boardcopy, n.x, n.y, playerNumber);
+
+            //calculate possible moves of next player
+            int nextPlayerMovecount = Heuristics::getMovecount(boardcopy, (playerNumber+1)%GameDetails::playerCount);
+
+            int newState = Heuristics::getScore(boardcopy, playerNumber);
+            if (newState < highestState){
+                std::cout << " is best so far with " << newState << " and Moves: " << nextPlayerMovecount << std::endl;
+                highestState = newState;
+                m = n;
+            }
+            else {
+                std::cout << " not better with " << newState << " and Moves: " << nextPlayerMovecount << std::endl;
+            }
+
+        }
+        //randomMove
+        //Move m = validMoves.at(std::rand() % validMoves.size());
         x = m.x;
         y = m.y;
     }
@@ -146,3 +189,4 @@ void Moves::recolor(uint8_t playerNumber, std::vector<uint8_t*>& markedTiles) {
         *entry = playerNumber;
     }
 }
+
