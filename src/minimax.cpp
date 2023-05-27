@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <algorithm>
+#include <stack>
 
 namespace Minimax
 {
@@ -24,27 +25,30 @@ namespace Minimax
 
     void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **)> &heuristic) {
 
-        std::vector<Node> nodeStack(1);
-        nodeStack[0].board = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
-        Moves::populateValidMoves(nodeStack[0].validMoves, board, playerNumber);
-        nodeStack[0].value = INT_MIN;
-        nodeStack[0].player = playerNumber;
+        std::stack<Node> nodeStack;
+        nodeStack.push(std::move(Node()));
+
+        Node &root = nodeStack.top();
+        root.board = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
+        Moves::populateValidMoves(root.validMoves, board, playerNumber);
+        root.value = INT_MIN;
+        root.player = playerNumber;
 
         uint8_t depth = 0;
-        Move currentRootMove = nodeStack[0].validMoves.back();
+        Move currentRootMove = root.validMoves.back();
         x = currentRootMove.x;
         y = currentRootMove.y;
 
         /*
         std::cout << "Moves (root):" << std::endl;
-        for (auto &element : nodeStack[0].validMoves) {
+        for (auto &element : nodeStack.top().validMoves) {
             std::cout << "X = " << (int)element.x << ", Y = " << (int)element.y << std::endl;
         }
         */
 
         // Iterative DFS
         while (!nodeStack.empty()) {
-            Node &currentNode = nodeStack.back();
+            Node &currentNode = nodeStack.top();
             //std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
 
             // All moves done
@@ -57,9 +61,9 @@ namespace Minimax
                 int compareVal = currentNode.value;
 
                 --depth;
-                nodeStack.pop_back();
+                nodeStack.pop();
 
-                Node &node = nodeStack.back();
+                Node &node = nodeStack.top();
                 // Maximize
                 if (node.player == playerNumber) {
                     if (compareVal > node.value) {
@@ -151,7 +155,7 @@ namespace Minimax
                     std::cout << "X = " << (int)element.x << ", Y = " << (int)element.y << std::endl;
                 }
                 */
-                nodeStack.push_back(std::move(newNode));
+                nodeStack.push(std::move(newNode));
             }
         }
         return;
