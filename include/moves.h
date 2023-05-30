@@ -13,6 +13,7 @@
 #include "move.h"
 #include "player.h"
 #include "settings.h"
+#include "heuristics.h"
 
 namespace Moves {
 
@@ -85,6 +86,7 @@ void markRecolor(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber, ui
  * @param markedTiles vector of pointers to marked tiles on the boardArr
  */
 void recolor(uint8_t playerNumber, std::vector<uint8_t*>& markedTiles);
+
 }  // namespace Moves
 
 #endif  // MOVES_H

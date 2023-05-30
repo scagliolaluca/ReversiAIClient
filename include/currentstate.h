@@ -64,6 +64,8 @@ void deleteMapNeighbors();
  * @retval false populating mapNeighbors failed
  */
 bool populateNeighbors();
+
+
 }  // namespace CurrentState
 
 #endif  // CURRENTSTATE_H
