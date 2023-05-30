@@ -39,6 +39,34 @@ namespace Heuristics
         return score;
     }
 
+    int getScoreEnemyMoves(uint8_t** board, uint8_t ourPlayerNumber){
+        int numEnemyMoves = 0;
+        for(int i=0;i<GameDetails::playerCount;i++){
+            if (i != ourPlayerNumber)
+                numEnemyMoves += getMovecount(board,i);
+        }
+        return numEnemyMoves;
+    }
+
+    int getScoreTakeEnemy(uint8_t** board, uint8_t playerNumber) {
+        std::vector<Move> validMoves;
+        Moves::populateValidMoves(validMoves, board, playerNumber);
+        int numMovesThatTake = 0;
+        uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
+        for(Move m : validMoves){
+            Heuristics::copyBoard(boardcopy, board);
+            Moves::makeMove(boardcopy, m.x, m.y, playerNumber);
+            //if the move takes some enemy thingies
+            bool takesEnemy = false;
+            for(int i=0;i<GameDetails::playerCount;i++){
+                if (i==playerNumber)continue;
+                if(getScore(board,i) != getScore(boardcopy,i)) takesEnemy = true;
+            }
+            if (takesEnemy) numMovesThatTake++;
+        }
+        return numMovesThatTake;
+    }
+
     int getMovecount(uint8_t** board, uint8_t playerNumber) {
         std::vector<Move> validMoves;
         Moves::populateValidMoves(validMoves, board, playerNumber);
