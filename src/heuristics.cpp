@@ -9,8 +9,16 @@
 namespace Heuristics
 {
     int weightedHeuristic(uint8_t** board) {
-        // TODO: weights
-        return getScore(board, GameDetails::playerNumber) + getMovecount(board, GameDetails::playerNumber);
+        // TODO: weights; normalization (for player count and map size)
+        int heuristic = 0;
+        heuristic += getScore(board, GameDetails::playerNumber);
+        heuristic += getMovecount(board, GameDetails::playerNumber);
+        heuristic -= getScoreEnemyMoves(board, GameDetails::playerNumber);
+
+        // Maybe remove: (Expensive and maybe not so helpful)
+        heuristic += getScoreTakeEnemy(board, GameDetails::playerNumber);
+
+        return heuristic;
     }
 
     int getScore(uint8_t** board, uint8_t playerNumber) {
@@ -41,9 +49,10 @@ namespace Heuristics
 
     int getScoreEnemyMoves(uint8_t** board, uint8_t ourPlayerNumber){
         int numEnemyMoves = 0;
-        for(int i=0;i<GameDetails::playerCount;i++){
-            if (i != ourPlayerNumber)
+        for(int i = 1; i <= GameDetails::playerCount; i++){
+            if (i != ourPlayerNumber) {
                 numEnemyMoves += getMovecount(board,i);
+            }
         }
         return numEnemyMoves;
     }
@@ -58,9 +67,9 @@ namespace Heuristics
             Moves::makeMove(boardcopy, m.x, m.y, playerNumber);
             //if the move takes some enemy thingies
             bool takesEnemy = false;
-            for(int i=0;i<GameDetails::playerCount;i++){
-                if (i==playerNumber)continue;
-                if(getScore(board,i) != getScore(boardcopy,i)) takesEnemy = true;
+            for(int i = 1; i <= GameDetails::playerCount; i++){
+                if (i == playerNumber) continue;
+                if (getScore(board, i) != getScore(boardcopy, i)) takesEnemy = true;
             }
             if (takesEnemy) numMovesThatTake++;
         }
