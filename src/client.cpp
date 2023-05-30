@@ -1,6 +1,7 @@
 #include "client.h"
 
 #include "minimax.hpp"
+#include "heuristics.h"
 
 #define	SERVER_CLOSED_CONNECTION 0
 #define SERVER_TRANSMITTED_MAP 2
@@ -94,9 +95,7 @@ void Client::runClient() {
                               << "Searching for move...\n";
                     auto startTime = std::chrono::steady_clock::now();
 #endif
-                    //Moves::getRandomMove(x, y, CurrentState::boardArr, GameDetails::playerNumber);
-                    const std::function<int(uint8_t **)> testHeuristic = [](uint8_t **board) { static int i = 0; return ++i; };
-                    Minimax::getMoveMinimax(x, y, CurrentState::boardArr, GameDetails::playerNumber, CurrentState::searchDepth, testHeuristic);
+                    Minimax::getMoveMinimax(x, y, CurrentState::boardArr, GameDetails::playerNumber, CurrentState::searchDepth, Heuristics::weightedHeuristic);
 #ifdef CLIENT_LOGGING
                     auto endTime = std::chrono::steady_clock::now();
                     int64_t d = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();

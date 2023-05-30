@@ -13,7 +13,6 @@
 #include "move.h"
 #include "player.h"
 #include "settings.h"
-#include "heuristics.h"
 
 namespace Moves {
 

@@ -5,7 +5,8 @@ void Moves::getRandomMove(uint8_t& x, uint8_t& y, uint8_t** board, uint8_t playe
 
     Moves::populateValidMoves(validMoves, board, playerNumber);
     if (!validMoves.empty()) {
-
+        Move m = validMoves.at(std::rand() % validMoves.size());
+        /*
         std::cout << "ValidMoveCount: " << validMoves.size() << std::endl; //count how many moves you can make
         std::cout << "FieldCount: " << Heuristics::getScore(board, playerNumber) << std::endl; //count how many stones you have
 
@@ -49,6 +50,7 @@ void Moves::getRandomMove(uint8_t& x, uint8_t& y, uint8_t** board, uint8_t playe
         }
         //randomMove
         //Move m = validMoves.at(std::rand() % validMoves.size());
+        */
         x = m.x;
         y = m.y;
     }

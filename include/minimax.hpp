@@ -1,3 +1,5 @@
+#pragma once
+
 #include "arrayops.h"
 #include "move.h"
 
