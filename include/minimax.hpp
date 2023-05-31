@@ -15,8 +15,12 @@ namespace Minimax
         Node(Node &&other);
         ~Node();
 
+        bool hasValidMoves();
+        const Move &nextMove();
+
         uint8_t **board;
         std::vector<Move> validMoves;
+        uint currentMoveIndex = 0;
         int value;
         uint8_t player;
     };

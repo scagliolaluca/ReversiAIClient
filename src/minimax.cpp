@@ -10,17 +10,23 @@
 
 namespace Minimax
 {
-    Node::~Node() {
-        delete2DArr(board, GameDetails::boardHeight);
-    }
-
     Node::Node(Node &&other) {
         board = other.board;
         other.board = nullptr;
 
         validMoves = std::move(other.validMoves);
+        currentMoveIndex = other.currentMoveIndex;
         value = other.value;
         player = other.player;
+    }
+    Node::~Node() {
+        delete2DArr(board, GameDetails::boardHeight);
+    }
+    bool Node::hasValidMoves() {
+        return currentMoveIndex < validMoves.size();
+    }
+    const Move &Node::nextMove() {
+        return validMoves[currentMoveIndex++];
     }
 
     void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **)> &heuristic) {
@@ -35,7 +41,7 @@ namespace Minimax
         root.player = playerNumber;
 
         uint8_t depth = 0;
-        Move currentRootMove = root.validMoves.back();
+        Move currentRootMove = root.validMoves.front();
         x = currentRootMove.x;
         y = currentRootMove.y;
 
@@ -52,7 +58,7 @@ namespace Minimax
             //std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
 
             // All moves done
-            if (currentNode.validMoves.empty()) {
+            if (currentNode.hasValidMoves()) {
                 //std::cout << "Node finished for player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
                 if (depth == 0) {
                     break;
@@ -85,11 +91,10 @@ namespace Minimax
             }
 
             // Generate new node
-            Move currentMove = currentNode.validMoves.back();
+            const Move &currentMove = currentNode.nextMove();
             if (depth == 0) {
                 currentRootMove = currentMove;
             }
-            currentNode.validMoves.pop_back();
 
             Node newNode;
             // new Board
