@@ -11,12 +11,12 @@ namespace Heuristics
     int weightedHeuristic(uint8_t** board) {
         // TODO: weights; normalization (for player count and map size)
         int heuristic = 0;
-        heuristic += getScore(board, GameDetails::playerNumber);
+        heuristic += 2 * getScore(board, GameDetails::playerNumber);
         heuristic += getMovecount(board, GameDetails::playerNumber);
         heuristic -= getScoreEnemyMoves(board, GameDetails::playerNumber);
 
         // Maybe remove: (Expensive and maybe not so helpful)
-        heuristic += getScoreTakeEnemy(board, GameDetails::playerNumber);
+        // heuristic += getScoreTakeEnemy(board, GameDetails::playerNumber);
 
         return heuristic;
     }
