@@ -2,6 +2,7 @@
 
 #include "minimax.hpp"
 #include "heuristics.h"
+#include "iterativeDeepening.h"
 
 #define	SERVER_CLOSED_CONNECTION 0
 #define SERVER_TRANSMITTED_MAP 2
@@ -78,9 +79,10 @@ void Client::runClient() {
 #ifdef CLIENT_LOGGING
                     std::cout << "== Timelimit: " << CurrentState::timelimit << "ms ==\n"
                               << "Getting random move...\n";
-                    auto startTime = std::chrono::steady_clock::now();
+                    const std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
 #endif
-                    Moves::getRandomMove(x, y, CurrentState::boardArr, GameDetails::playerNumber);
+                    IterativeDeepening::getMoveIterativeDeepening(x, y, CurrentState::boardArr, GameDetails::playerNumber, CurrentState::timelimit, startTime, Heuristics::weightedHeuristic);
+                    //Moves::getRandomMove(x, y, CurrentState::boardArr, GameDetails::playerNumber);
 #ifdef CLIENT_LOGGING
                     auto endTime = std::chrono::steady_clock::now();
                     int64_t d = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
