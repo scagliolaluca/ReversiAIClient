@@ -3,9 +3,9 @@
 #include "gamedetails.h"
 #include "currentstate.h"
 #include "moves.h"
+#include "heuristics.h"
 
 #include <limits.h>
-#include <algorithm>
 #include <stack>
 
 namespace Minimax
@@ -29,7 +29,7 @@ namespace Minimax
         return validMoves[currentMoveIndex++];
     }
 
-    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **)> &heuristic) {
+    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **, uint8_t)> &heuristic) {
 
         std::stack<Node> nodeStack;
         nodeStack.push(std::move(Node()));
@@ -108,20 +108,13 @@ namespace Minimax
             // If game ended
             if (newNode.player == 0) {
                 isLeaf = true;
-                // Win
-                if (highestPieceCount(newNode.board) == playerNumber) {
-                    newNode.value = INT_MAX;
-                }
-                // Loss
-                else {
-                    newNode.value = INT_MIN;
-                }
+                newNode.value = Heuristics::evaluateEndState(newNode.board, playerNumber);
                 //std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
             }
             // If reached max depth
             else if (depth + 1 >= maxDepth) {
                 isLeaf = true;
-                newNode.value = heuristic(newNode.board);
+                newNode.value = heuristic(newNode.board, playerNumber);
                 //std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
             }
             
@@ -164,23 +157,6 @@ namespace Minimax
             }
         }
         return;
-    }
-
-    uint8_t highestPieceCount(uint8_t **board) {
-        std::vector<int> pieceCounts(GameDetails::playerCount, 0);
-        uint8_t boardVal;
-
-        for (uint8_t i = 0; i < GameDetails::boardHeight; ++i) {
-            for (uint8_t j = 0; j < GameDetails::boardWidth; ++j) {
-                boardVal = board[i][j];
-                if (boardVal >= 1 && boardVal <= GameDetails::playerCount) {
-                    ++pieceCounts[boardVal - 1];
-                }
-            }
-        }
-
-        auto maxCountIt = std::max_element(pieceCounts.begin(), pieceCounts.end());
-        return std::distance(pieceCounts.begin(), maxCountIt) + 1;
     }
 
     uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer) {
