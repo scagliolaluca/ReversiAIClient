@@ -13,20 +13,24 @@ namespace Heuristics
     int evaluateEndState(uint8_t** board, uint8_t playerNumber) {
         uint8_t rank = playerRanking(board, playerNumber);
 
-        // TODO tweak values
-        switch (rank) {
-            case 1:
-                return INT_MAX;
-            case 2:
-                return 1;
-            case 3:
-                return -1;
-
-            default:
-                break;
+        if (rank == 1) {
+            return INT_MAX;
+        }
+        else if (rank == GameDetails::playerCount) {
+            return INT_MIN;
         }
 
-        return INT_MIN;
+        // TODO: balancing in respect to heuristic
+        if (GameDetails::playerCount == 4) {
+            if (rank == 2) {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+
+        return 0;
     }
 
     uint8_t playerRanking(uint8_t **board, uint8_t playerNumber) {
