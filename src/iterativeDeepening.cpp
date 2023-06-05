@@ -29,40 +29,34 @@ namespace IterativeDeepening
                 //if set, this is the last move
                 if(islastMove){
                     std::cout << "\nIt's the last move\n" << std::endl;
-                    std::cout << "Before: " << int(x) << int(y) << std::endl;
                     x = tempx;
                     y = tempy;
-                    std::cout << "After: " << int(x) << int(y) << std::endl;
-                    return;
                 }
                 return;
             }
 
             iterationDepth++;
         }
-
         return;
-
     }
 
     bool timeForNextIteration(uint8_t iterationDepth, const std::chrono::time_point<std::chrono::steady_clock> startTime, uint32_t maxTime) {
-
 
         //calculate left time
         auto currentTime = std::chrono::steady_clock::now();
         int64_t spentTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
         int64_t timeLeft = maxTime - spentTime;
-        std::cout << "\nTime left before " << int(iterationDepth) << " depth is " << timeLeft << std::endl;
+        std::cout << "\nTime left before " << int(iterationDepth) << " depth is\t" << timeLeft << std::endl;
 
-        //calculate estimated Time by getting basis for exp-function of previous iterations
-
-        if (iterationDepth - 1 != 0) {
+        //calculate estimated Time by getting average branching faktor of previous iterations
+        if (iterationDepth != 1) {
             double basis = std::pow(spentTime / 0.07, (1.0 / (iterationDepth - 1)));
             std::cout << "Branching Faktor so far: \t" << basis << std::endl;
             double estimatedTime = std::pow(basis, iterationDepth);
             estimatedTime = estimatedTime * 0.07;
             std::cout << "Estimated time TEST: \t" << estimatedTime << std::endl;
 
+            // If enough time left
             if (estimatedTime < timeLeft) {
                 return true;
             }
@@ -77,22 +71,13 @@ namespace IterativeDeepening
         }
     }
 
-        //calculate estimated Time for next iteration
-        //int64_t estimatedTime = std::pow(branchingAverage, iterationDepth) * 0.02;
-        //std::cout << "Estimated time for depth " << int(iterationDepth) << " is " << estimatedTime << std::endl;
-        //if (estimatedTime < timeLeft){
-        //    return true;
-        //}
-        //else {
-        //    std::cout << "No Time left for next Iteration!" << std::endl;
-        //    return false;
-        //}
-
     bool checkForTimeEnd(uint32_t maxTime, const std::chrono::time_point<std::chrono::steady_clock> startTime) {
 
         auto currentTime = std::chrono::steady_clock::now();
         int64_t spentTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
         int64_t timeLeft = maxTime - spentTime;
+
+        // If enough time left
         if(timeLeft > 5){
             return 1;
         }
