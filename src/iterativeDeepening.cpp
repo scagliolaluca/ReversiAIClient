@@ -12,17 +12,29 @@ namespace IterativeDeepening
         uint8_t iterationDepth = 1;
         uint8_t tempx;
         uint8_t tempy;
+        bool islastMove = false;
 
         while(timeForNextIteration(iterationDepth, startTime, maxTime)){
             x = tempx;
             y = tempy;
-            if(Minimax::getMoveMinimaxTimeCheck(tempx, tempy, board, playerNumber, iterationDepth, maxTime, startTime, heuristic)){
+
+            // If Minimax returns true --> continueCalculation
+            if(Minimax::getMoveMinimaxTimeCheck(tempx, tempy, board, playerNumber, iterationDepth, maxTime, startTime, islastMove, heuristic)){
                 std::cout << "Found x,y: " << int(tempx) << int(tempy) << " in depth " << int(iterationDepth) << std::endl;
                 x = tempx;
                 y = tempy;
             }
             else{
-                std::cout << "\nMinimax couldn't finish in time, or game Ended\n" << std::endl;
+                std::cout << "\nMinimax couldn't finish in time or no new nodes available\n" << std::endl;
+                //if set, this is the last move
+                if(islastMove){
+                    std::cout << "\nIt's the last move\n" << std::endl;
+                    std::cout << "Before: " << int(x) << int(y) << std::endl;
+                    x = tempx;
+                    y = tempy;
+                    std::cout << "After: " << int(x) << int(y) << std::endl;
+                    return;
+                }
                 return;
             }
 

@@ -163,7 +163,7 @@ namespace Minimax
     }
 
 
-    bool getMoveMinimaxTimeCheck(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, uint32_t maxTime, const std::chrono::time_point<std::chrono::steady_clock> startTime, const std::function<int(uint8_t **)> &heuristic) {
+    bool getMoveMinimaxTimeCheck(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, uint32_t maxTime, const std::chrono::time_point<std::chrono::steady_clock> startTime, bool &islastMove, const std::function<int(uint8_t **)> &heuristic) {
 
         std::stack<Node> nodeStack;
         nodeStack.push(std::move(Node()));
@@ -246,6 +246,13 @@ namespace Minimax
                 // If game ended
                 if (newNode.player == 0) {
                     isLeaf = true;
+
+                    // If game ended in depth 0 (needed in iterativeDeepening)
+                    if(depth == 0){
+                        islastMove = true;
+                        std::cout << "Depth: " << int(depth) << std::endl;
+                    }
+
                     // Win
                     if (highestPieceCount(newNode.board) == playerNumber) {
                         newNode.value = INT_MAX;
@@ -306,6 +313,7 @@ namespace Minimax
                 return continue_calculation;
             }
         }
+
         return continue_calculation;
     }
 
