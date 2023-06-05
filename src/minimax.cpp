@@ -179,6 +179,8 @@ namespace Minimax
         x = currentRootMove.x;
         y = currentRootMove.y;
 
+        bool continue_calculation = false;
+
         /*
         std::cout << "Moves (root):" << std::endl;
         for (auto &element : nodeStack.top().validMoves) {
@@ -259,6 +261,7 @@ namespace Minimax
                     isLeaf = true;
                     newNode.value = heuristic(newNode.board);
                     //std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
+                    continue_calculation = true;
                 }
 
                 // Leaf nodes are handled immediately -> aren't added to the stack
@@ -299,10 +302,11 @@ namespace Minimax
             }
             else{
                 std::cout << "No Time left, so break calculation and return with previous iteration" << std::endl;
-                return 0;
+                continue_calculation = false;
+                return continue_calculation;
             }
         }
-        return 1;
+        return continue_calculation;
     }
 
     uint8_t highestPieceCount(uint8_t **board) {
