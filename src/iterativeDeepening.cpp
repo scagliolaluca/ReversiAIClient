@@ -14,9 +14,10 @@ namespace IterativeDeepening
         uint8_t tempy;
         bool miniMaxReachedMaxDepth = true;
 
-        std::chrono::duration<double> lastIterationDuration(0);
+        std::deque<std::chrono::duration<double>> iterationDurations;
+        iterationDurations.push_front(std::chrono::duration<double>(0));
 
-        while(timeForNextIteration(iterationDepth, stopTime, lastIterationDuration) && miniMaxReachedMaxDepth){
+        while(timeForNextIteration(iterationDepth, stopTime, iterationDurations) && miniMaxReachedMaxDepth){
             x = tempx;
             y = tempy;
 
@@ -39,42 +40,54 @@ namespace IterativeDeepening
                 */
                 return;
             }
-            lastIterationDuration = std::chrono::steady_clock::now() - iterationStart;
+            iterationDurations.push_front(std::chrono::steady_clock::now() - iterationStart);
 
             iterationDepth++;
         }
         return;
     }
 
-    bool timeForNextIteration(uint8_t iterationDepth, const std::chrono::time_point<std::chrono::steady_clock> &stopTime, const std::chrono::duration<double> &lastIterationDuration) {
+    bool timeForNextIteration(uint8_t iterationDepth, const std::chrono::time_point<std::chrono::steady_clock> &stopTime, const std::deque<std::chrono::duration<double>> &iterationDurations) {
 
         //calculate left time
         auto currentTime = std::chrono::steady_clock::now();
         int64_t timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - currentTime).count();
         std::cout << "\nTime left before " << int(iterationDepth) << " depth is\t" << timeLeft << std::endl;
 
-        //calculate estimated Time by getting average branching faktor of previous iterations
-        if (iterationDepth != 1) {
-            int64_t t_previous = std::chrono::duration_cast<std::chrono::nanoseconds>(lastIterationDuration).count();
-            std::cout << "Previous duration: " << t_previous << "ns (" << (double)t_previous / 1000000 << "ms)" << std::endl;
-            double basis = std::pow(t_previous, (1.0 / (iterationDepth - 1)));
-            std::cout << "Branching Faktor so far: \t" << basis << std::endl;
-            double estimatedTime = std::pow(basis, iterationDepth);
-            estimatedTime = estimatedTime / 1000000;
-            std::cout << "Estimated time TEST: \t" << estimatedTime << std::endl;
+        std::cout << "Last iteration:\t" << iterationDurations[0].count() * 1000 << "ms" << std::endl;
 
-            // If enough time left
-            if (estimatedTime < timeLeft) {
-                return true;
-            }
-            else {
-                std::cout << "No Time left for next Iteration! " << estimatedTime << "\t" << timeLeft << std::endl;
-                return false;
-            }
-        }
-        else{
-            std::cout << "Branching Faktor: 0 " << std::endl;
+        // Always returns true for first iteration (iterationDurations starts with one element)
+        if (iterationDurations.size() < 2) {
             return true;
+        }
+
+        // Estimate the time required per node
+        // TODO: average over multiple iterations / init from multiple calls to iterative deepening
+        double estimatedTimePerNode = 0;
+        if (iterationDurations.size() < 3) {
+            // Use default value (from experiments) for second iteration (insufficient data for estimation)
+            estimatedTimePerNode = 2 * std::pow(10, -5);
+        }
+        else {
+            double d = (double)(iterationDepth-1) / (iterationDepth-2);
+            double a = std::pow(iterationDurations[1].count() - iterationDurations[2].count(), d);
+            estimatedTimePerNode = std::pow(a / (iterationDurations[0].count() - iterationDurations[1].count()), 1 / (d-1));
+        }
+
+        std::cout << "EstimatedTimePerNode:\t" << estimatedTimePerNode << "sec" << std::endl;
+        double estimatedBranchingFactor = std::pow((iterationDurations[0].count() - iterationDurations[1].count()) / estimatedTimePerNode, (double)1 / (iterationDepth-1));
+        std::cout << "EstimatedBranchingFactor:\t" << estimatedBranchingFactor << std::endl;
+        double estimatedTime = estimatedTimePerNode * std::pow(estimatedBranchingFactor, iterationDepth) + iterationDurations[0].count();
+        estimatedTime *= 1000;
+        std::cout << "EstimatedTime:\t" << estimatedTime  << "ms"<< std::endl;
+
+        if (estimatedTime + 500 < timeLeft) {
+            std::cout << "Enough Time left for next Iteration! " << estimatedTime << " (+500ms)\t" << timeLeft << std::endl;
+            return true;
+        }
+        else {
+            std::cout << "No Time left for next Iteration! " << estimatedTime << "\t" << timeLeft << std::endl;
+            return false;
         }
     }
 
