@@ -2,10 +2,12 @@
 
 #include "arrayops.h"
 #include "move.h"
+#include "iterativeDeepening.h"
 
 #include <cstdint>
 #include <functional>
 #include <vector>
+#include <chrono>
 
 namespace Minimax
 {
