@@ -5,18 +5,78 @@
 
 #include <iostream>
 #include <vector>
+#include <limits.h>
+#include <algorithm>
 
 namespace Heuristics
 {
-    int weightedHeuristic(uint8_t** board) {
+    int evaluateEndState(uint8_t** board, uint8_t playerNumber) {
+        uint8_t rank = playerRanking(board, playerNumber);
+
+        if (rank == 1) {
+            return INT_MAX;
+        }
+        else if (rank == GameDetails::playerCount) {
+            return INT_MIN;
+        }
+
+        // TODO: balancing in respect to heuristic
+        if (GameDetails::playerCount == 4) {
+            if (rank == 2) {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+
+        return 0;
+    }
+
+    uint8_t playerRanking(uint8_t **board, uint8_t playerNumber) {
+        std::vector<int> pieceCounts(GameDetails::playerCount, 0);
+        uint8_t boardVal;
+
+        // Calculate each player's score
+        for (uint8_t i = 0; i < GameDetails::boardHeight; ++i) {
+            for (uint8_t j = 0; j < GameDetails::boardWidth; ++j) {
+                boardVal = board[i][j];
+                if (boardVal >= 1 && boardVal <= GameDetails::playerCount) {
+                    ++pieceCounts[boardVal - 1];
+                }
+            }
+        }
+
+        // Get a list of players, sorted by their scores
+        std::vector<uint8_t> players;
+        std::iota(players.begin(), players.end(), 1);
+        std::sort(players.begin(), players.end(), [&pieceCounts](int i, int j){ return pieceCounts[i] < pieceCounts[j]; });
+
+        // Obtain the actual rank
+        uint8_t rank = 1;
+        int prevPlayerScore = -1;
+        for (uint i = 0; i < players.size(); ++i) {
+            if (pieceCounts[i] != prevPlayerScore) {
+                rank = i + 1;
+            }
+            if (players[i] == playerNumber) {
+                break;
+            }
+            prevPlayerScore = pieceCounts[i];
+        }
+
+        return rank;
+    }
+
+    int weightedHeuristic(uint8_t** board, uint8_t playerNumber) {
         // TODO: weights; normalization (for player count and map size)
         int heuristic = 0;
-        heuristic += 2 * getScore(board, GameDetails::playerNumber);
-        heuristic += getMovecount(board, GameDetails::playerNumber);
-        heuristic -= getScoreEnemyMoves(board, GameDetails::playerNumber);
+        heuristic += 2 * getScore(board, playerNumber);
+        heuristic += getMovecount(board, playerNumber);
+        heuristic -= getScoreEnemyMoves(board, playerNumber);
 
         // Maybe remove: (Expensive and maybe not so helpful)
-        // heuristic += getScoreTakeEnemy(board, GameDetails::playerNumber);
+        // heuristic += getScoreTakeEnemy(board, playerNumber);
 
         return heuristic;
     }
@@ -26,19 +86,6 @@ namespace Heuristics
 
         for (uint8_t i = 0; i < GameDetails::boardHeight; i++) {
             for (uint8_t j = 0; j < GameDetails::boardWidth; j++) {
-                /*
-                char v = board[i][j];
-                std::map<uint8_t, char>::const_iterator it = asciiLookup.find(v);
-                if (it == asciiLookup.cend()) {
-                    std::cerr << "Lookup Error occurred while printing boardArr...\n";
-                    return 0;
-                }
-                char c = it->second;
-
-                if ((int)c - 48 == int(playerNumber)) {
-                    score += 1;
-                }
-                */
                 if (board[i][j] == playerNumber) {
                     ++score;
                 }
