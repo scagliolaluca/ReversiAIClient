@@ -78,15 +78,15 @@ void Client::runClient() {
                     // searchTime given
 #ifdef CLIENT_LOGGING
                     std::cout << "== Timelimit: " << CurrentState::timelimit << "ms ==\n"
-                              << "Getting random move...\n";
-                    const std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
+                              << "Searching for move...\n";
 #endif
-                    IterativeDeepening::getMoveIterativeDeepening(x, y, CurrentState::boardArr, GameDetails::playerNumber, CurrentState::timelimit, startTime, Heuristics::weightedHeuristic);
-                    //Moves::getRandomMove(x, y, CurrentState::boardArr, GameDetails::playerNumber);
+                    auto startTime = std::chrono::steady_clock::now();
+                    auto stopTime = startTime + std::chrono::milliseconds(CurrentState::timelimit);
+                    IterativeDeepening::getMoveIterativeDeepening(x, y, CurrentState::boardArr, GameDetails::playerNumber, Heuristics::weightedHeuristic, stopTime);
 #ifdef CLIENT_LOGGING
                     auto endTime = std::chrono::steady_clock::now();
                     int64_t d = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
-                    std::cout << "Random move found (x: " << int(x) << ", y: " << int(y) << ").\n"
+                    std::cout << "Move found (x: " << int(x) << ", y: " << int(y) << ").\n"
                               << "Time spent: " << d << "ms\n";
 #endif
 
