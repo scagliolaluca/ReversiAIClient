@@ -58,7 +58,7 @@ namespace IterativeDeepening
         // TODO: average over multiple iterations / init from multiple calls to iterative deepening
         double estimatedTimePerNode = 0;
         if (iterationDurations.size() < 3 || iterationDurations[0].count() < iterationDurations[1].count() || iterationDurations[1].count() < iterationDurations[2].count()) {
-            // Use default value (from experiments) for second iteration (insufficient data for estimation)
+            // Use default value (from experiments) for second iteration / inaccurate data for estimation
             estimatedTimePerNode = 2 * std::pow(10, -5);
         }
         else {
@@ -70,6 +70,7 @@ namespace IterativeDeepening
 
         double estimatedBranchingFactor = std::pow((iterationDurations[0].count() - iterationDurations[1].count()) / estimatedTimePerNode, (double)1 / (iterationDepth-1));
         if (iterationDurations[0].count() < iterationDurations[1].count() || estimatedBranchingFactor < 1) {
+            // Set branching factor to 1 if data for estimation not accurate
             estimatedBranchingFactor = 1;
         }
         std::cout << "EstimatedBranchingFactor:\t" << estimatedBranchingFactor << std::endl;
@@ -78,6 +79,7 @@ namespace IterativeDeepening
         estimatedTime *= 1000;
         std::cout << "EstimatedTime:\t" << estimatedTime  << "ms"<< std::endl;
 
+        // Safety buffer of 500ms
         if (estimatedTime + 500 < timeLeft) {
             std::cout << "Enough Time left for next Iteration! " << estimatedTime << " (+500ms)\t" << timeLeft << std::endl;
             return true;
