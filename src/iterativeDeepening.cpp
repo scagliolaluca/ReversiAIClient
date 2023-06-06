@@ -57,7 +57,7 @@ namespace IterativeDeepening
         // Estimate the time required per node
         // TODO: average over multiple iterations / init from multiple calls to iterative deepening
         double estimatedTimePerNode = 0;
-        if (iterationDurations.size() < 3) {
+        if (iterationDurations.size() < 3 || iterationDurations[0].count() < iterationDurations[1].count() || iterationDurations[1].count() < iterationDurations[2].count()) {
             // Use default value (from experiments) for second iteration (insufficient data for estimation)
             estimatedTimePerNode = 2 * std::pow(10, -5);
         }
@@ -66,10 +66,14 @@ namespace IterativeDeepening
             double a = std::pow(iterationDurations[1].count() - iterationDurations[2].count(), d);
             estimatedTimePerNode = std::pow(a / (iterationDurations[0].count() - iterationDurations[1].count()), 1 / (d-1));
         }
-
         std::cout << "EstimatedTimePerNode:\t" << estimatedTimePerNode << "sec" << std::endl;
+
         double estimatedBranchingFactor = std::pow((iterationDurations[0].count() - iterationDurations[1].count()) / estimatedTimePerNode, (double)1 / (iterationDepth-1));
+        if (iterationDurations[0].count() < iterationDurations[1].count() || estimatedBranchingFactor < 1) {
+            estimatedBranchingFactor = 1;
+        }
         std::cout << "EstimatedBranchingFactor:\t" << estimatedBranchingFactor << std::endl;
+
         double estimatedTime = estimatedTimePerNode * std::pow(estimatedBranchingFactor, iterationDepth) + iterationDurations[0].count();
         estimatedTime *= 1000;
         std::cout << "EstimatedTime:\t" << estimatedTime  << "ms"<< std::endl;
