@@ -8,7 +8,6 @@ namespace IterativeDeepening
 {
 
     void getMoveIterativeDeepening(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, const std::function<int(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime){
-
         uint8_t iterationDepth = 1;
         uint8_t tempx;
         uint8_t tempy;
@@ -18,9 +17,6 @@ namespace IterativeDeepening
         iterationDurations.push_front(std::chrono::duration<double>(0));
 
         while(timeForNextIteration(iterationDepth, stopTime, iterationDurations) && miniMaxReachedMaxDepth){
-            x = tempx;
-            y = tempy;
-
             auto iterationStart = std::chrono::steady_clock::now();
             // If Minimax returns true --> continueCalculation
             if(Minimax::getMoveMinimax(tempx, tempy, miniMaxReachedMaxDepth, board, playerNumber, iterationDepth, heuristic, stopTime)){
@@ -30,14 +26,11 @@ namespace IterativeDeepening
             }
             else{
                 std::cout << "\nMinimax couldn't finish in time\n" << std::endl;
-                /*
-                //if set, this is the last move
-                if(islastMove){
-                    std::cout << "\nIt's the last move\n" << std::endl;
+                // Only use move from failed iteration if timeout occurs on first iteration (no move returned yet)
+                if (iterationDepth <= 1) {
                     x = tempx;
                     y = tempy;
                 }
-                */
                 return;
             }
             iterationDurations.push_front(std::chrono::steady_clock::now() - iterationStart);
