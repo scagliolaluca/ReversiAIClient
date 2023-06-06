@@ -17,16 +17,18 @@ namespace Minimax
         Node(Node &&other);
         ~Node();
 
+        bool hasValidMoves();
+        const Move &nextMove();
+
         uint8_t **board;
         std::vector<Move> validMoves;
+        uint currentMoveIndex = 0;
         int value;
         uint8_t player;
     };
 
-    bool getMoveMinimaxTimeCheck(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, uint32_t maxTime, const std::chrono::time_point<std::chrono::steady_clock> startTime, bool &islastMove, const std::function<int(uint8_t **)> &heuristic);
-    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **)> &heuristic);
+    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **, uint8_t)> &heuristic);
 
-    uint8_t highestPieceCount(uint8_t **board);
     uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer);
 } // namespace Minimax
 

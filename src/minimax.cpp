@@ -3,28 +3,34 @@
 #include "gamedetails.h"
 #include "currentstate.h"
 #include "moves.h"
+#include "heuristics.h"
 
 #include <limits.h>
-#include <algorithm>
 #include <stack>
 #include <iostream>
 
 namespace Minimax
 {
-    Node::~Node() {
-        delete2DArr(board, GameDetails::boardHeight);
-    }
-
     Node::Node(Node &&other) {
         board = other.board;
         other.board = nullptr;
 
         validMoves = std::move(other.validMoves);
+        currentMoveIndex = other.currentMoveIndex;
         value = other.value;
         player = other.player;
     }
+    Node::~Node() {
+        delete2DArr(board, GameDetails::boardHeight);
+    }
+    bool Node::hasValidMoves() {
+        return currentMoveIndex < validMoves.size();
+    }
+    const Move &Node::nextMove() {
+        return validMoves[currentMoveIndex++];
+    }
 
-    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **)> &heuristic) {
+    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **, uint8_t)> &heuristic) {
 
         std::stack<Node> nodeStack;
         nodeStack.push(std::move(Node()));
@@ -36,7 +42,7 @@ namespace Minimax
         root.player = playerNumber;
 
         uint8_t depth = 0;
-        Move currentRootMove = root.validMoves.back();
+        Move currentRootMove = root.validMoves.front();
         x = currentRootMove.x;
         y = currentRootMove.y;
 
@@ -53,7 +59,7 @@ namespace Minimax
             //std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
 
             // All moves done
-            if (currentNode.validMoves.empty()) {
+            if (currentNode.hasValidMoves()) {
                 //std::cout << "Node finished for player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
                 if (depth == 0) {
                     break;
@@ -86,11 +92,10 @@ namespace Minimax
             }
 
             // Generate new node
-            Move currentMove = currentNode.validMoves.back();
+            const Move &currentMove = currentNode.nextMove();
             if (depth == 0) {
                 currentRootMove = currentMove;
             }
-            currentNode.validMoves.pop_back();
 
             Node newNode;
             // new Board
@@ -104,20 +109,13 @@ namespace Minimax
             // If game ended
             if (newNode.player == 0) {
                 isLeaf = true;
-                // Win
-                if (highestPieceCount(newNode.board) == playerNumber) {
-                    newNode.value = INT_MAX;
-                }
-                    // Loss
-                else {
-                    newNode.value = INT_MIN;
-                }
+                newNode.value = Heuristics::evaluateEndState(newNode.board, playerNumber);
                 //std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
             }
                 // If reached max depth
             else if (depth + 1 >= maxDepth) {
                 isLeaf = true;
-                newNode.value = heuristic(newNode.board);
+                newNode.value = heuristic(newNode.board, playerNumber);
                 //std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
             }
 

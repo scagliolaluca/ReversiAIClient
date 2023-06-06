@@ -4,7 +4,13 @@
 #include <cstdint>
 
 namespace Heuristics {
-    int weightedHeuristic(uint8_t** board);
+    // Utility function
+    int evaluateEndState(uint8_t** board, uint8_t playerNumber);
+
+    uint8_t playerRanking(uint8_t **board, uint8_t playerNumber);
+
+    // Heuristic
+    int weightedHeuristic(uint8_t** board, uint8_t playerNumber);
 
     int getScore(uint8_t** board, uint8_t playerNumber);
     int getScoreEnemyMoves(uint8_t** board, uint8_t ourPlayerNumber);
