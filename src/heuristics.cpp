@@ -68,8 +68,87 @@ namespace Heuristics
         return rank;
     }
 
+    float normalizedHeuristic(uint8_t** board, uint8_t playerNumber) {
+        const int PC = GameDetails::playerCount;
+        // TODO: obtain these values... (more efficiently)
+        int myPieceValue = getScore(board, playerNumber);
+        int enemyPieceValue = 0;
+        for (int i = 1; i <= GameDetails::playerCount; ++i) {
+            if (i != playerNumber) {
+                enemyPieceValue += getScore(board, i);
+            }
+        }
+        int totalPieceValue = myPieceValue + enemyPieceValue;
+
+        int myMoves = getMovecount(board, playerNumber);
+        int enemyMoves = getScoreEnemyMoves(board, playerNumber);
+        int totalMoves = myMoves + enemyMoves;
+
+        // Weights for the heuristic parts
+        // TODO: adjust depending on game state
+        int w_myPieces = 2;
+        int w_enemyPieces = 2;
+        int w_myMoves = 1;
+        int w_enemyMoves = 1;
+
+        // Normalized piece score
+        float h_myPieces = 0;
+
+        float contribution = (float)myPieceValue / totalPieceValue;
+        if (contribution <= (float)1 / PC) {
+            h_myPieces = contribution * PC - 1;
+        }
+        else {
+            h_myPieces = (contribution * PC - 1) / (PC - 1);
+        }
+
+        // Normalized enemy piece score
+        float h_enemyPieces = 0;
+
+        float enemyContribution = (float)enemyPieceValue / totalPieceValue;
+        float pcRatio = (float)PC / (PC - 1);
+        if (enemyContribution <= (float)(PC - 1) / PC) {
+            h_enemyPieces = -enemyContribution * pcRatio + 1;
+        }
+        else {
+            h_enemyPieces = -(enemyContribution * pcRatio - 1) / (pcRatio - 1);
+        }
+
+        // Normalized moves
+        float h_myMoves = 0;
+
+        float moveContribution = (float)myMoves / totalMoves;
+        if (moveContribution <= (float)1 / PC) {
+            h_myMoves = moveContribution * PC - 1;
+        }
+        else {
+            h_myMoves = (moveContribution * PC - 1) / (PC - 1);
+        }
+
+        // Normalized enemy moves
+        float h_enemyMoves = 0;
+
+        float enemyMoveContribution = (float)enemyMoves / totalMoves;
+        //float pcRatio = (float)PC / (PC - 1);
+        if (enemyMoveContribution <= (float)(PC - 1) / PC) {
+            h_enemyMoves = -enemyMoveContribution * pcRatio + 1;
+        }
+        else {
+            h_enemyMoves = -(enemyMoveContribution * pcRatio - 1) / (pcRatio - 1);
+        }
+
+        // Blend heuristics
+        float h = 0;
+        h += w_myPieces * h_myPieces;
+        h += w_enemyPieces * h_enemyPieces;
+        h += w_myMoves * h_myMoves;
+        h += w_enemyMoves * h_enemyMoves;
+        h /= (w_myPieces + w_enemyPieces + w_myMoves + w_enemyMoves);
+
+        return h;
+    }
+
     float weightedHeuristic(uint8_t** board, uint8_t playerNumber) {
-        // TODO: weights; normalization (for player count and map size)
         int heuristic = 0;
         heuristic += 2 * getScore(board, playerNumber);
         heuristic += getMovecount(board, playerNumber);

@@ -10,6 +10,7 @@ namespace Heuristics {
     uint8_t playerRanking(uint8_t **board, uint8_t playerNumber);
 
     // Heuristic
+    float normalizedHeuristic(uint8_t** board, uint8_t playerNumber);
     float weightedHeuristic(uint8_t** board, uint8_t playerNumber);
 
     int getScore(uint8_t** board, uint8_t playerNumber);
