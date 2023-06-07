@@ -19,6 +19,9 @@ namespace Minimax
         currentMoveIndex = other.currentMoveIndex;
         value = other.value;
         player = other.player;
+
+        alpha = other.alpha;
+        beta = other.beta;
     }
     Node::~Node() {
         delete2DArr(board, GameDetails::boardHeight);
@@ -47,6 +50,10 @@ namespace Minimax
         Moves::populateValidMoves(root.validMoves, board, playerNumber);
         root.value = INT_MIN;
         root.player = playerNumber;
+
+        //Pruning
+        root.alpha = INT_MIN;
+        root.beta = INT_MAX;
 
         uint8_t depth = 0;
         Move currentRootMove = root.validMoves.front();
@@ -80,6 +87,9 @@ namespace Minimax
                 }
 
                 int compareVal = currentNode.value;
+                //Pruning
+                int compareAlpha = currentNode.alpha;
+                int compareBeta = currentNode.beta;
 
                 --depth;
                 nodeStack.pop();
@@ -94,16 +104,35 @@ namespace Minimax
                             y = currentRootMove.y;
                         }
                     }
+                    //Pruning
+                    if(node.alpha < compareAlpha){
+                        node.alpha = compareAlpha;
+                    }
                 }
                 // Minimize
                 else {
                     if (compareVal < node.value) {
                         node.value = compareVal;
                     }
+                    //Pruning
+                    if(node.beta < compareBeta){
+                        node.beta = compareBeta;
+                    }
+
                 }
 
                 continue;
             }
+            //Pruning Cuttoffs
+            if(currentNode.player == playerNumber && currentNode.value >= currentNode.beta){
+                //Maximize
+                continue;
+            }
+            if(currentNode.player != playerNumber && currentNode.value <= currentNode.alpha){
+                //Minimize
+                continue;
+            }
+
 
             // Generate new node
             const Move &currentMove = currentNode.nextMove();
@@ -152,20 +181,30 @@ namespace Minimax
                             x = currentRootMove.x;
                             y = currentRootMove.y;
                         }
+                        //Pruning
+                        currentNode.alpha = newNode.value;
                     }
                 }
                 // Minimize
                 else {
                     if (newNode.value < currentNode.value) {
                         currentNode.value = newNode.value;
+                        //Pruning
+                        currentNode.beta = newNode.value;
                     }
                 }
             } 
             else {
+                //Pruning
+                newNode.alpha = currentNode.alpha;
+                newNode.beta = currentNode.beta;
+
                 if (newNode.player == playerNumber) {
+                    //Maximize
                     newNode.value = INT_MIN;
                 }
                 else {
+                    //Minimize
                     newNode.value = INT_MAX;
                 }
 
