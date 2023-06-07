@@ -5,28 +5,28 @@
 
 #include <iostream>
 #include <vector>
-#include <limits.h>
+#include <limits>
 #include <algorithm>
 
 namespace Heuristics
 {
-    int evaluateEndState(uint8_t** board, uint8_t playerNumber) {
+    float evaluateEndState(uint8_t** board, uint8_t playerNumber) {
         uint8_t rank = playerRanking(board, playerNumber);
 
         if (rank == 1) {
-            return INT_MAX;
+            return std::numeric_limits<float>::max();
         }
         else if (rank == GameDetails::playerCount) {
-            return INT_MIN;
+            return std::numeric_limits<float>::lowest();
         }
 
         // TODO: balancing in respect to heuristic
         if (GameDetails::playerCount == 4) {
             if (rank == 2) {
-                return 1;
+                return 0.5f;
             }
             else {
-                return -1;
+                return -0.5f;
             }
         }
 
@@ -68,7 +68,7 @@ namespace Heuristics
         return rank;
     }
 
-    int weightedHeuristic(uint8_t** board, uint8_t playerNumber) {
+    float weightedHeuristic(uint8_t** board, uint8_t playerNumber) {
         // TODO: weights; normalization (for player count and map size)
         int heuristic = 0;
         heuristic += 2 * getScore(board, playerNumber);

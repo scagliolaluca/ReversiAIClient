@@ -5,7 +5,7 @@
 #include "moves.h"
 #include "heuristics.h"
 
-#include <limits.h>
+#include <limits>
 #include <stack>
 #include <iostream>
 
@@ -30,14 +30,14 @@ namespace Minimax
         return validMoves[currentMoveIndex++];
     }
 
-    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **, uint8_t)> &heuristic) {
+    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic) {
         bool reached;
         auto stopTime = std::chrono::steady_clock::now() + std::chrono::hours(24);
         getMoveMinimax(x, y, reached, board, playerNumber, maxDepth, heuristic, stopTime);
         return;
     }
 
-    bool getMoveMinimax(uint8_t &x, uint8_t &y, bool &reachedMaxDepth, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime) {
+    bool getMoveMinimax(uint8_t &x, uint8_t &y, bool &reachedMaxDepth, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime) {
 
         std::stack<Node> nodeStack;
         nodeStack.push(std::move(Node()));
@@ -45,7 +45,7 @@ namespace Minimax
         Node &root = nodeStack.top();
         root.board = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
         Moves::populateValidMoves(root.validMoves, board, playerNumber);
-        root.value = INT_MIN;
+        root.value = std::numeric_limits<float>::lowest();
         root.player = playerNumber;
 
         uint8_t depth = 0;
@@ -163,10 +163,10 @@ namespace Minimax
             } 
             else {
                 if (newNode.player == playerNumber) {
-                    newNode.value = INT_MIN;
+                    newNode.value = std::numeric_limits<float>::lowest();
                 }
                 else {
-                    newNode.value = INT_MAX;
+                    newNode.value = std::numeric_limits<float>::max();
                 }
 
                 ++depth;
