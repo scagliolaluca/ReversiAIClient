@@ -125,11 +125,15 @@ namespace Minimax
             }
             //Pruning Cuttoffs
             if(currentNode.player == playerNumber && currentNode.value >= currentNode.beta){
+                std::cout << "MaxCutoff" << currentNode.value << ": "<< currentNode.beta << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Maximize
+                currentNode.nextMove();
                 continue;
             }
             if(currentNode.player != playerNumber && currentNode.value <= currentNode.alpha){
+                std::cout << "MinCutoff" << currentNode.value << ": "<< currentNode.alpha << "------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Minimize
+                currentNode.nextMove();
                 continue;
             }
 
