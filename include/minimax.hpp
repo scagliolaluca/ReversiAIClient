@@ -4,6 +4,7 @@
 #include "move.h"
 #include "iterativeDeepening.h"
 
+#include <limits.h>
 #include <cstdint>
 #include <functional>
 #include <vector>
