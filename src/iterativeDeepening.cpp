@@ -58,7 +58,7 @@ namespace IterativeDeepening
         double estimatedTimePerNode = 0;
         if (iterationDurations.size() < 3 || iterationDurations[0].count() < iterationDurations[1].count() || iterationDurations[1].count() < iterationDurations[2].count()) {
             // Use default value (from experiments) for second iteration / inaccurate data for estimation
-            estimatedTimePerNode = 2 * std::pow(10, -5);
+            estimatedTimePerNode = 5 * std::pow(10, -5);
         }
         else {
             double d = (double)(iterationDepth-1) / (iterationDepth-2);
