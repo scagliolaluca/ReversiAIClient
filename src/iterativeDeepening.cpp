@@ -41,7 +41,6 @@ namespace IterativeDeepening
     }
 
     bool timeForNextIteration(uint8_t iterationDepth, const std::chrono::time_point<std::chrono::steady_clock> &stopTime, const std::deque<std::chrono::duration<double>> &iterationDurations) {
-
         //calculate left time
         auto currentTime = std::chrono::steady_clock::now();
         int64_t timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - currentTime).count();

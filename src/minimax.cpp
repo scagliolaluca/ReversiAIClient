@@ -188,11 +188,11 @@ namespace Minimax
         int64_t timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - currentTime).count();
 
         // If enough time left
-        if(timeLeft > 5){
-            return 1;
+        if(timeLeft > 10){
+            return true;
         }
         else{
-            return 0;
+            return false;
         }
     }
 
