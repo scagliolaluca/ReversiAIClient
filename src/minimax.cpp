@@ -104,21 +104,28 @@ namespace Minimax
                             y = currentRootMove.y;
                         }
                     }
-                    //Pruning
-                    if(node.alpha < compareAlpha){
-                        node.alpha = compareAlpha;
-                    }
+                    // //Pruning
+                    // if(node.alpha < compareAlpha){
+                    //     node.alpha = compareAlpha;
+                    // }
                 }
                 // Minimize
                 else {
                     if (compareVal < node.value) {
                         node.value = compareVal;
                     }
-                    //Pruning
-                    if(node.beta < compareBeta){
-                        node.beta = compareBeta;
-                    }
+                    // //Pruning
+                    // if(node.beta < compareBeta){
+                    //     node.beta = compareBeta;
+                    // }
 
+                }
+                //Pruning
+                if(node.beta > compareBeta){
+                    node.beta = compareBeta;
+                }
+                if(node.alpha < compareAlpha){
+                    node.alpha = compareAlpha;
                 }
 
                 continue;
@@ -131,7 +138,7 @@ namespace Minimax
                 continue;
             }
             if(currentNode.player != playerNumber && currentNode.value <= currentNode.alpha){
-                std::cout << "MinCutoff" << currentNode.value << ": "<< currentNode.alpha << "------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+                std::cout << "MinCutoff" << currentNode.value << ": "<< currentNode.alpha << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Minimize
                 currentNode.nextMove();
                 continue;
