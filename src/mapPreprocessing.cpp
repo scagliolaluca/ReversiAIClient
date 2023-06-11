@@ -123,18 +123,4 @@ namespace MapPreprocessing
         }
         return;
     }
-
-    int evaluateEdges(uint8_t** board, uint8_t** mask, uint8_t playerNumber) {
-        int evaluation = 0;
-        //go over al fields and check if it is one of our pieces
-        for (int i = 0; i < GameDetails::boardHeight; i++) {
-            for (int j = 0; j < GameDetails::boardWidth; j++) {
-                if (board[i][j] == playerNumber)
-                    //look up value of square occupied by piece and add to evaluation
-                    evaluation += mask[i][j];
-            }
-        }
-
-        return evaluation;
-    }
 } // namespace MapPreprocessing

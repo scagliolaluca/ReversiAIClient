@@ -2,6 +2,7 @@
 
 #include "gamedetails.h"
 #include "moves.h"
+#include "mapPreprocessing.hpp"
 
 #include <iostream>
 #include <vector>
@@ -70,82 +71,86 @@ namespace Heuristics
 
     float normalizedHeuristic(uint8_t** board, uint8_t playerNumber) {
         const int PC = GameDetails::playerCount;
-        // TODO: obtain these values... (more efficiently)
-        int myPieceValue = getScore(board, playerNumber);
-        int enemyPieceValue = 0;
+
+        // Weights for the heuristic parts
+        // TODO: adjust depending on game state
+        int w_myPieces = 10;
+        int w_enemyPieces = 10;
+        int w_myPieceValue = 1;
+        int w_enemyPieceValue = 1;
+        int w_myMoves = 1;
+        int w_enemyMoves = 1;
+
+        // Data for heuristic calculation
+        std::vector<float> rawScores;
+        std::vector<float> weightedScores;
+        getScores(rawScores, weightedScores, board, MapPreprocessing::tileValueMask);
+
+        float myPieces = rawScores[playerNumber-1];
+        float enemyPieces = 0;
         for (int i = 1; i <= GameDetails::playerCount; ++i) {
             if (i != playerNumber) {
-                enemyPieceValue += getScore(board, i);
+                enemyPieces += rawScores[i-1];
             }
         }
-        int totalPieceValue = myPieceValue + enemyPieceValue;
+        float totalPieces = myPieces + enemyPieces;
+
+        float myPieceValue = weightedScores[playerNumber-1];
+        float enemyPieceValue = 0;
+        for (int i = 1; i <= GameDetails::playerCount; ++i) {
+            if (i != playerNumber) {
+                enemyPieceValue += weightedScores[i-1];
+            }
+        }
+        float totalPieceValue = myPieceValue + enemyPieceValue;
 
         int myMoves = getMovecount(board, playerNumber);
         int enemyMoves = getScoreEnemyMoves(board, playerNumber);
         int totalMoves = myMoves + enemyMoves;
 
-        // Weights for the heuristic parts
-        // TODO: adjust depending on game state
-        int w_myPieces = 2;
-        int w_enemyPieces = 2;
-        int w_myMoves = 1;
-        int w_enemyMoves = 1;
+        // Normalized piece counts
+        float h_myPieces = normalizedMyHeuristicValue(myPieces, totalPieces, PC);
+        float h_enemyPieces = normalizedOthersHeuristicValue(enemyPieces, totalPieces, PC);
 
-        // Normalized piece score
-        float h_myPieces = 0;
-
-        float contribution = (float)myPieceValue / totalPieceValue;
-        if (contribution <= (float)1 / PC) {
-            h_myPieces = contribution * PC - 1;
-        }
-        else {
-            h_myPieces = (contribution * PC - 1) / (PC - 1);
-        }
-
-        // Normalized enemy piece score
-        float h_enemyPieces = 0;
-
-        float enemyContribution = (float)enemyPieceValue / totalPieceValue;
-        float pcRatio = (float)PC / (PC - 1);
-        if (enemyContribution <= (float)(PC - 1) / PC) {
-            h_enemyPieces = -enemyContribution * pcRatio + 1;
-        }
-        else {
-            h_enemyPieces = -(enemyContribution * pcRatio - 1) / (pcRatio - 1);
-        }
+        // Normalized piece values
+        float h_myPieceValue = normalizedMyHeuristicValue(myPieceValue, totalPieceValue, PC);
+        float h_enemyPieceValue = normalizedOthersHeuristicValue(enemyPieceValue, totalPieceValue, PC);
 
         // Normalized moves
-        float h_myMoves = 0;
-
-        float moveContribution = (float)myMoves / totalMoves;
-        if (moveContribution <= (float)1 / PC) {
-            h_myMoves = moveContribution * PC - 1;
-        }
-        else {
-            h_myMoves = (moveContribution * PC - 1) / (PC - 1);
-        }
-
-        // Normalized enemy moves
-        float h_enemyMoves = 0;
-
-        float enemyMoveContribution = (float)enemyMoves / totalMoves;
-        //float pcRatio = (float)PC / (PC - 1);
-        if (enemyMoveContribution <= (float)(PC - 1) / PC) {
-            h_enemyMoves = -enemyMoveContribution * pcRatio + 1;
-        }
-        else {
-            h_enemyMoves = -(enemyMoveContribution * pcRatio - 1) / (pcRatio - 1);
-        }
+        float h_myMoves = normalizedMyHeuristicValue(myMoves, totalMoves, PC);
+        float h_enemyMoves = normalizedOthersHeuristicValue(enemyMoves, totalMoves, PC);
 
         // Blend heuristics
         float h = 0;
         h += w_myPieces * h_myPieces;
         h += w_enemyPieces * h_enemyPieces;
+        h += w_myPieceValue * h_myPieceValue;
+        h += w_enemyPieceValue * h_enemyPieceValue;
         h += w_myMoves * h_myMoves;
         h += w_enemyMoves * h_enemyMoves;
         h /= (w_myPieces + w_enemyPieces + w_myMoves + w_enemyMoves);
 
         return h;
+    }
+
+    float normalizedMyHeuristicValue(float myValue, float totalValue, uint8_t playerCount) {
+        float contribution = myValue / totalValue;
+        if (contribution <= (float)1 / playerCount) {
+            return contribution * playerCount - 1;
+        }
+        else {
+            return (contribution * playerCount - 1) / (playerCount - 1);
+        }
+    }
+    float normalizedOthersHeuristicValue(float othersValue, float totalValue, uint8_t playerCount) {
+        float othersContribution = othersValue / totalValue;
+        float pcRatio = (float)playerCount / (playerCount - 1);
+        if (othersContribution <= (float)(playerCount - 1) / playerCount) {
+            return -othersContribution * pcRatio + 1;
+        }
+        else {
+            return -(othersContribution * pcRatio - 1) / (pcRatio - 1);
+        }
     }
 
     float weightedHeuristic(uint8_t** board, uint8_t playerNumber) {
@@ -171,6 +176,27 @@ namespace Heuristics
             }
         }
         return score;
+    }
+
+    void getScores(std::vector<float> &rawScores, std::vector<float> &weightedScores, uint8_t **board, float **valueMask) {
+        rawScores.clear();
+        weightedScores.clear();
+
+        rawScores.resize(GameDetails::playerCount, 0);
+        weightedScores.resize(GameDetails::playerCount, 0);
+
+        for (uint8_t i = 0; i < GameDetails::boardHeight; i++) {
+            for (uint8_t j = 0; j < GameDetails::boardWidth; j++) {
+
+                uint8_t boardValue = board[i][j];
+                if (boardValue < 1 || boardValue > GameDetails::playerCount) {
+                    continue;
+                }
+                rawScores[boardValue-1]++;
+                weightedScores[boardValue-1] += valueMask[i][j];
+            }
+        }
+        return;
     }
 
     int getScoreEnemyMoves(uint8_t** board, uint8_t ourPlayerNumber){
