@@ -9,7 +9,8 @@
 #include <stack>
 #include <iostream>
 #include <algorithm> 
-#include <vector>     
+#include <vector> 
+#include <numeric> 
 
 namespace Minimax
 {
@@ -134,13 +135,13 @@ namespace Minimax
             }
             //Pruning Cuttoffs
             if(currentNode.player == playerNumber && currentNode.value >= currentNode.beta){
-                std::cout << "MaxCutoff" << currentNode.value << ": "<< currentNode.beta << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+                //std::cout << "MaxCutoff" << currentNode.value << ": "<< currentNode.beta << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Maximize
                 currentNode.currentMoveIndex = currentNode.validMoves.size();
                 continue;
             }
             if(currentNode.player != playerNumber && currentNode.value <= currentNode.alpha){
-                std::cout << "MinCutoff" << currentNode.value << ": "<< currentNode.alpha << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
+                //std::cout << "MinCutoff" << currentNode.value << ": "<< currentNode.alpha << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Minimize
                 currentNode.currentMoveIndex = currentNode.validMoves.size();
                 continue;
@@ -270,9 +271,58 @@ namespace Minimax
                 }
                 continue;
             }
+            //sort moves for pruning
+            //sortMoves(validMoves, board, nextPlayer);
+
             return nextPlayer;
         } 
 
         return 0;
+    }
+
+    void sortMoves(std::vector<Move> &moves, uint8_t **board, uint8_t player){
+        int vectorSize = moves.size();
+        //create vector with values from evaluation function
+        std::vector<int> resultVector(vectorSize); 
+        for (int i = 0; i < vectorSize; i++) {
+            //copy board
+            uint8_t** boardCopy = new uint8_t*[GameDetails::boardHeight];
+            for (int i = 0; i < GameDetails::boardHeight; i++) {
+                boardCopy[i] = new uint8_t[GameDetails::boardWidth];
+            }
+
+            for(int j=0; j<GameDetails::boardHeight; j++) {
+                memcpy(boardCopy[j], board[j], GameDetails::boardWidth*sizeof(uint8_t));
+            }
+
+
+            Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
+            resultVector[i] = Heuristics::getScoreEnemyMoves(boardCopy, GameDetails::playerNumber);
+
+            // Delete the array created
+            for (int i = 0; i < GameDetails::boardHeight; i++)
+                delete[] boardCopy[i];
+            delete[] boardCopy;
+        }
+
+        // Create a vector of indices
+        std::vector<short int> indices(vectorSize);
+        std::iota(indices.begin(), indices.end(), 0); 
+
+        // Sort the indices based on the values of the priorities vector
+        std::sort(indices.begin(), indices.end(), [&](short int a, short int b) {
+            return resultVector[a] < resultVector[b];
+        });
+
+
+        // Rearrange the moves based on the sorted indices
+        std::vector<Move> sortedMoves(vectorSize);
+        for (size_t i = 0; i < indices.size(); ++i) {
+            sortedMoves[i] = moves[indices[i]];
+        }
+        
+        moves.assign(sortedMoves.begin(), sortedMoves.end());
+
+        return;
     }
 } // namespace Minimax
