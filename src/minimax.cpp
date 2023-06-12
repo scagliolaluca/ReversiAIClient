@@ -272,7 +272,7 @@ namespace Minimax
                 continue;
             }
             //sort moves for pruning
-            //sortMoves(validMoves, board, nextPlayer);
+            sortMoves(validMoves, board, nextPlayer);
 
             return nextPlayer;
         } 
@@ -316,11 +316,12 @@ namespace Minimax
 
 
         // Rearrange the moves based on the sorted indices
-        std::vector<Move> sortedMoves(vectorSize);
+        std::vector<Move> sortedMoves;
+        sortedMoves.reserve(vectorSize);
         for (size_t i = 0; i < indices.size(); ++i) {
-            sortedMoves[i] = moves[indices[i]];
+            sortedMoves.push_back(moves[indices[i]]);
         }
-        
+
         moves.assign(sortedMoves.begin(), sortedMoves.end());
 
         return;
