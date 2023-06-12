@@ -79,7 +79,7 @@ namespace Minimax
                     break;
                 }
 
-                int compareVal = currentNode.value;
+                float compareVal = currentNode.value;
 
                 --depth;
                 nodeStack.pop();

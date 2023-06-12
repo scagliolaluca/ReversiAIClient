@@ -74,12 +74,13 @@ namespace Heuristics
 
         // Weights for the heuristic parts
         // TODO: adjust depending on game state
-        int w_myPieces = 10;
-        int w_enemyPieces = 10;
+        int w_myPieces = 1;
         int w_myPieceValue = 1;
-        int w_enemyPieceValue = 1;
         int w_myMoves = 1;
-        int w_enemyMoves = 1;
+        // Enemy weights can be set to 0 because current normalization takes enemy values for own values into account
+        int w_enemyPieces = 0;
+        int w_enemyPieceValue = 0;
+        int w_enemyMoves = 0;
 
         // Data for heuristic calculation
         std::vector<float> rawScores;
