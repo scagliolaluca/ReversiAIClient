@@ -8,6 +8,8 @@
 #include <limits.h>
 #include <stack>
 #include <iostream>
+#include <algorithm> 
+#include <vector>     
 
 namespace Minimax
 {
@@ -88,8 +90,8 @@ namespace Minimax
 
                 int compareVal = currentNode.value;
                 //Pruning
-                int compareAlpha = currentNode.alpha;
-                int compareBeta = currentNode.beta;
+                // int compareAlpha = currentNode.alpha;
+                // int compareBeta = currentNode.beta;
 
                 --depth;
                 nodeStack.pop();
@@ -104,29 +106,29 @@ namespace Minimax
                             y = currentRootMove.y;
                         }
                     }
-                    // //Pruning
-                    // if(node.alpha < compareAlpha){
-                    //     node.alpha = compareAlpha;
-                    // }
+                    //Pruning
+                    if(node.value > node.alpha){
+                        node.alpha = node.value;
+                    }
                 }
                 // Minimize
                 else {
                     if (compareVal < node.value) {
                         node.value = compareVal;
                     }
-                    // //Pruning
-                    // if(node.beta < compareBeta){
-                    //     node.beta = compareBeta;
-                    // }
+                    //Pruning
+                    if(node.value < node.beta){
+                        node.beta = node.value;
+                    }
 
                 }
                 //Pruning
-                if(node.beta > compareBeta){
-                    node.beta = compareBeta;
-                }
-                if(node.alpha < compareAlpha){
-                    node.alpha = compareAlpha;
-                }
+                // if(node.beta > compareBeta){
+                //     node.beta = compareBeta;
+                // }
+                // if(node.alpha < compareAlpha){
+                //     node.alpha = compareAlpha;
+                // }
 
                 continue;
             }
@@ -134,13 +136,13 @@ namespace Minimax
             if(currentNode.player == playerNumber && currentNode.value >= currentNode.beta){
                 std::cout << "MaxCutoff" << currentNode.value << ": "<< currentNode.beta << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Maximize
-                currentNode.nextMove();
+                currentNode.currentMoveIndex = currentNode.validMoves.size();
                 continue;
             }
             if(currentNode.player != playerNumber && currentNode.value <= currentNode.alpha){
                 std::cout << "MinCutoff" << currentNode.value << ": "<< currentNode.alpha << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Minimize
-                currentNode.nextMove();
+                currentNode.currentMoveIndex = currentNode.validMoves.size();
                 continue;
             }
 
