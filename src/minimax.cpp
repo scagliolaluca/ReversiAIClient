@@ -9,7 +9,8 @@
 #include <stack>
 #include <iostream>
 #include <algorithm> 
-#include <vector>     
+#include <vector> 
+#include <numeric> 
 
 namespace Minimax
 {
@@ -270,9 +271,59 @@ namespace Minimax
                 }
                 continue;
             }
+            //sort moves for pruning
+            sortMoves(&validMoves, board, nextPlayer);
+
             return nextPlayer;
         } 
 
         return 0;
+    }
+
+    void sortMoves(std::vector<Move> &moves, const uint8_t **board, const uint8_t player){
+        int vectorSize = moves.size();
+        short int boardWidth = sizeof(board[0]) / sizeof(int);
+        short int boardHeight = sizeof(board) / sizeof(board[0]);
+        //create vector with values from evaluation function
+        std::vector<int> resultVector(vectorSize); 
+        for (int i = 0; i < vectorSize; i++) {
+            //copy board
+            uint8_t** boardCopy = new uint8_t*[GameDetails::boardHeight];
+            for (int i = 0; i < GameDetails::boardHeight; i++) {
+                boardCopy[i] = new uint8_t[GameDetails::boardWidth];
+            }
+
+            for(int j=0; j<GameDetails::boardHeight; j++) {
+                memcpy(boardCopy[j], board[j], boardWidth*sizeof(uint8_t));
+            }
+
+
+            Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
+            resultVector[i] = Heuristics::getScoreEnemyMoves(boardCopy, GameDetails::playerNumber);
+
+            // Delete the array created
+            for (int i = 0; i < GameDetails::boardHeight; i++)
+                delete[] boardCopy[i];
+            delete[] boardCopy;
+        }
+
+        // Create a vector of indices
+        std::vector<short int> indices(vectorSize);
+        std::iota(indices.begin(), indices.end(), 0); 
+
+        // Sort the indices based on the values of the priorities vector
+        std::sort(indices.begin(), indices.end(), [&](short int a, short int b) {
+            return resultVector[a] < resultVector[b];
+        });
+
+
+        // Rearrange the moves based on the sorted indices
+        std::vector<Move> sortedMoves(vectorSize);
+        for (size_t i = 0; i < indices.size(); ++i) {
+            sortedMoves[i] = moves[indices[i]];
+        }
+        moves = sortedMoves;
+
+        return;
     }
 } // namespace Minimax
