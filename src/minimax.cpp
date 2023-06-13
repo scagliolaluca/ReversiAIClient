@@ -54,7 +54,7 @@ namespace Minimax
         root.value = INT_MIN;
         root.player = playerNumber;
 
-        //Pruning
+        //Pruning -> initialize in root
         root.alpha = INT_MIN;
         root.beta = INT_MAX;
 
@@ -104,7 +104,7 @@ namespace Minimax
                             y = currentRootMove.y;
                         }
                     }
-                    //Pruning
+                    //Pruning -> update alpha going up
                     if(node.value > node.alpha){
                         node.alpha = node.value;
                     }
@@ -114,7 +114,7 @@ namespace Minimax
                     if (compareVal < node.value) {
                         node.value = compareVal;
                     }
-                    //Pruning
+                    //Pruning -> update beta going up
                     if(node.value < node.beta){
                         node.beta = node.value;
                     }
@@ -182,7 +182,7 @@ namespace Minimax
                             x = currentRootMove.x;
                             y = currentRootMove.y;
                         }
-                        //Pruning
+                        //Pruning -> set alpha to highest leaf node one depth above
                         currentNode.alpha = newNode.value;
                     }
                 }
@@ -190,13 +190,13 @@ namespace Minimax
                 else {
                     if (newNode.value < currentNode.value) {
                         currentNode.value = newNode.value;
-                        //Pruning
+                        //Pruning -> set beta to lowest leaf node one depth above
                         currentNode.beta = newNode.value;
                     }
                 }
             } 
             else {
-                //Pruning
+                //Pruning -> pass down alpha and beta
                 newNode.alpha = currentNode.alpha;
                 newNode.beta = currentNode.beta;
 
