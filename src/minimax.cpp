@@ -90,9 +90,6 @@ namespace Minimax
                 }
 
                 int compareVal = currentNode.value;
-                //Pruning
-                // int compareAlpha = currentNode.alpha;
-                // int compareBeta = currentNode.beta;
 
                 --depth;
                 nodeStack.pop();
@@ -123,25 +120,15 @@ namespace Minimax
                     }
 
                 }
-                //Pruning
-                // if(node.beta > compareBeta){
-                //     node.beta = compareBeta;
-                // }
-                // if(node.alpha < compareAlpha){
-                //     node.alpha = compareAlpha;
-                // }
-
                 continue;
             }
             //Pruning Cuttoffs
             if(currentNode.player == playerNumber && currentNode.value >= currentNode.beta){
-                //std::cout << "MaxCutoff" << currentNode.value << ": "<< currentNode.beta << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Maximize
                 currentNode.currentMoveIndex = currentNode.validMoves.size();
                 continue;
             }
             if(currentNode.player != playerNumber && currentNode.value <= currentNode.alpha){
-                //std::cout << "MinCutoff" << currentNode.value << ": "<< currentNode.alpha << "-----------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
                 //Minimize
                 currentNode.currentMoveIndex = currentNode.validMoves.size();
                 continue;
