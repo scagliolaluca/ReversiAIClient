@@ -284,7 +284,7 @@ namespace Minimax
 
 
             Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
-            resultVector[i] = Heuristics::getScoreEnemyMoves(boardCopy, GameDetails::playerNumber);
+            resultVector[i] = Heuristics::getScore(boardCopy, GameDetails::playerNumber);
 
             // Delete the array created
             for (int i = 0; i < GameDetails::boardHeight; i++)
@@ -310,7 +310,7 @@ namespace Minimax
         }
 
         moves.assign(sortedMoves.begin(), sortedMoves.end());
-
+        //std::cout << "sorting:" << (int)moves[0].x << "/////" << (int)moves[0].y<< std::endl;
         return;
     }
 } // namespace Minimax
