@@ -8,6 +8,9 @@
 #include <limits>
 #include <stack>
 #include <iostream>
+#include <algorithm> 
+#include <vector> 
+#include <numeric> 
 
 namespace Minimax
 {
@@ -19,6 +22,9 @@ namespace Minimax
         currentMoveIndex = other.currentMoveIndex;
         value = other.value;
         player = other.player;
+
+        alpha = other.alpha;
+        beta = other.beta;
     }
     Node::~Node() {
         delete2DArr(board, GameDetails::boardHeight);
@@ -47,6 +53,10 @@ namespace Minimax
         Moves::populateValidMoves(root.validMoves, board, playerNumber);
         root.value = std::numeric_limits<float>::lowest();
         root.player = playerNumber;
+
+        //Pruning -> initialize in root
+        root.alpha = std::numeric_limits<float>::lowest();;
+        root.beta = std::numeric_limits<float>::max();
 
         uint8_t depth = 0;
         Move currentRootMove = root.validMoves.front();
@@ -94,16 +104,36 @@ namespace Minimax
                             y = currentRootMove.y;
                         }
                     }
+                    //Pruning -> update alpha going up
+                    if(node.value > node.alpha){
+                        node.alpha = node.value;
+                    }
                 }
                 // Minimize
                 else {
                     if (compareVal < node.value) {
                         node.value = compareVal;
                     }
-                }
+                    //Pruning -> update beta going up
+                    if(node.value < node.beta){
+                        node.beta = node.value;
+                    }
 
+                }
                 continue;
             }
+            //Pruning Cuttoffs
+            if(currentNode.player == playerNumber && currentNode.value >= currentNode.beta){
+                //Maximize
+                currentNode.currentMoveIndex = currentNode.validMoves.size();
+                continue;
+            }
+            if(currentNode.player != playerNumber && currentNode.value <= currentNode.alpha){
+                //Minimize
+                currentNode.currentMoveIndex = currentNode.validMoves.size();
+                continue;
+            }
+
 
             // Generate new node
             const Move &currentMove = currentNode.nextMove();
@@ -152,16 +182,24 @@ namespace Minimax
                             x = currentRootMove.x;
                             y = currentRootMove.y;
                         }
+                        //Pruning -> set alpha to highest leaf node one depth above
+                        currentNode.alpha = newNode.value;
                     }
                 }
                 // Minimize
                 else {
                     if (newNode.value < currentNode.value) {
                         currentNode.value = newNode.value;
+                        //Pruning -> set beta to lowest leaf node one depth above
+                        currentNode.beta = newNode.value;
                     }
                 }
             } 
             else {
+                //Pruning -> pass down alpha and beta
+                newNode.alpha = currentNode.alpha;
+                newNode.beta = currentNode.beta;
+
                 if (newNode.player == playerNumber) {
                     newNode.value = std::numeric_limits<float>::lowest();
                 }
@@ -218,9 +256,60 @@ namespace Minimax
                 }
                 continue;
             }
+            //sort moves for pruning
+            // TODO improve efficiency; not in leafs
+            sortMoves(validMoves, board, nextPlayer);
+
             return nextPlayer;
         } 
 
         return 0;
+    }
+
+    void sortMoves(std::vector<Move> &moves, uint8_t **board, uint8_t player){
+        int vectorSize = moves.size();
+        //create vector with values from evaluation function
+        std::vector<int> resultVector(vectorSize); 
+        for (int i = 0; i < vectorSize; i++) {
+            //copy board
+            uint8_t** boardCopy = new uint8_t*[GameDetails::boardHeight];
+            for (int i = 0; i < GameDetails::boardHeight; i++) {
+                boardCopy[i] = new uint8_t[GameDetails::boardWidth];
+            }
+
+            for(int j=0; j<GameDetails::boardHeight; j++) {
+                memcpy(boardCopy[j], board[j], GameDetails::boardWidth*sizeof(uint8_t));
+            }
+
+
+            Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
+            resultVector[i] = Heuristics::getScore(boardCopy, GameDetails::playerNumber);
+
+            // Delete the array created
+            for (int i = 0; i < GameDetails::boardHeight; i++)
+                delete[] boardCopy[i];
+            delete[] boardCopy;
+        }
+
+        // Create a vector of indices
+        std::vector<short int> indices(vectorSize);
+        std::iota(indices.begin(), indices.end(), 0); 
+
+        // Sort the indices based on the values of the priorities vector
+        std::sort(indices.begin(), indices.end(), [&](short int a, short int b) {
+            return resultVector[a] < resultVector[b];
+        });
+
+
+        // Rearrange the moves based on the sorted indices
+        std::vector<Move> sortedMoves;
+        sortedMoves.reserve(vectorSize);
+        for (size_t i = 0; i < indices.size(); ++i) {
+            sortedMoves.push_back(moves[indices[i]]);
+        }
+
+        moves.assign(sortedMoves.begin(), sortedMoves.end());
+        //std::cout << "sorting:" << (int)moves[0].x << "/////" << (int)moves[0].y<< std::endl;
+        return;
     }
 } // namespace Minimax
