@@ -7,7 +7,7 @@
 namespace IterativeDeepening
 {
 
-    void getMoveIterativeDeepening(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, const std::function<int(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime){
+    void getMoveIterativeDeepening(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, const std::function<float(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime){
         uint8_t iterationDepth = 1;
         uint8_t tempx;
         uint8_t tempy;
@@ -41,7 +41,6 @@ namespace IterativeDeepening
     }
 
     bool timeForNextIteration(uint8_t iterationDepth, const std::chrono::time_point<std::chrono::steady_clock> &stopTime, const std::deque<std::chrono::duration<double>> &iterationDurations) {
-
         //calculate left time
         auto currentTime = std::chrono::steady_clock::now();
         int64_t timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - currentTime).count();
@@ -59,7 +58,7 @@ namespace IterativeDeepening
         double estimatedTimePerNode = 0;
         if (iterationDurations.size() < 3 || iterationDurations[0].count() < iterationDurations[1].count() || iterationDurations[1].count() < iterationDurations[2].count()) {
             // Use default value (from experiments) for second iteration / inaccurate data for estimation
-            estimatedTimePerNode = 2 * std::pow(10, -5);
+            estimatedTimePerNode = 5 * std::pow(10, -5);
         }
         else {
             double d = (double)(iterationDepth-1) / (iterationDepth-2);

@@ -6,8 +6,6 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <thread>
-#include <atomic>
 
 #include "currentstate.h"
 #include "logging.h"

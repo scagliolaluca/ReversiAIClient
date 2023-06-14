@@ -1,5 +1,12 @@
 #include "map.h"
 
+#include "mapPreprocessing.hpp"
+
+#ifdef LOAD_LOGGING
+#include "debugUtils.hpp"
+#include "gamedetails.h"
+#endif
+
 bool Map::loadMap(std::string path) {
     std::stringstream buffer;
 
@@ -79,6 +86,18 @@ bool Map::loadMap(std::stringstream& mapStream) {
     if (!CurrentState::populateNeighbors()) {
         return false;
     }
+
+#ifdef LOAD_LOGGING
+    std::cout << "Map neighbors successfully populated\n";
+    std::cout << "\nCreate value mask...\n";
+#endif
+
+    MapPreprocessing::createValueMask();
+
+#ifdef LOAD_LOGGING
+    std::cout << "Value mask created:\n";
+    DebugUtils::printArray(MapPreprocessing::tileValueMask, GameDetails::boardHeight, GameDetails::boardWidth);
+#endif
 
     return true;
 }
