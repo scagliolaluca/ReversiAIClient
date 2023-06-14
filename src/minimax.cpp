@@ -5,7 +5,7 @@
 #include "moves.h"
 #include "heuristics.h"
 
-#include <limits.h>
+#include <limits>
 #include <stack>
 #include <iostream>
 #include <algorithm> 
@@ -36,14 +36,14 @@ namespace Minimax
         return validMoves[currentMoveIndex++];
     }
 
-    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **, uint8_t)> &heuristic) {
+    void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic) {
         bool reached;
         auto stopTime = std::chrono::steady_clock::now() + std::chrono::hours(24);
         getMoveMinimax(x, y, reached, board, playerNumber, maxDepth, heuristic, stopTime);
         return;
     }
 
-    bool getMoveMinimax(uint8_t &x, uint8_t &y, bool &reachedMaxDepth, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<int(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime) {
+    bool getMoveMinimax(uint8_t &x, uint8_t &y, bool &reachedMaxDepth, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime) {
 
         std::stack<Node> nodeStack;
         nodeStack.push(std::move(Node()));
@@ -51,12 +51,12 @@ namespace Minimax
         Node &root = nodeStack.top();
         root.board = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
         Moves::populateValidMoves(root.validMoves, board, playerNumber);
-        root.value = INT_MIN;
+        root.value = std::numeric_limits<float>::lowest();
         root.player = playerNumber;
 
         //Pruning -> initialize in root
-        root.alpha = INT_MIN;
-        root.beta = INT_MAX;
+        root.alpha = std::numeric_limits<float>::lowest();;
+        root.beta = std::numeric_limits<float>::max();
 
         uint8_t depth = 0;
         Move currentRootMove = root.validMoves.front();
@@ -89,7 +89,7 @@ namespace Minimax
                     break;
                 }
 
-                int compareVal = currentNode.value;
+                float compareVal = currentNode.value;
 
                 --depth;
                 nodeStack.pop();
@@ -201,12 +201,10 @@ namespace Minimax
                 newNode.beta = currentNode.beta;
 
                 if (newNode.player == playerNumber) {
-                    //Maximize
-                    newNode.value = INT_MIN;
+                    newNode.value = std::numeric_limits<float>::lowest();
                 }
                 else {
-                    //Minimize
-                    newNode.value = INT_MAX;
+                    newNode.value = std::numeric_limits<float>::max();
                 }
 
                 ++depth;
@@ -228,11 +226,11 @@ namespace Minimax
         int64_t timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - currentTime).count();
 
         // If enough time left
-        if(timeLeft > 5){
-            return 1;
+        if(timeLeft > 10){
+            return true;
         }
         else{
-            return 0;
+            return false;
         }
     }
 
@@ -259,6 +257,7 @@ namespace Minimax
                 continue;
             }
             //sort moves for pruning
+            // TODO improve efficiency; not in leafs
             sortMoves(validMoves, board, nextPlayer);
 
             return nextPlayer;
