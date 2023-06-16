@@ -3,6 +3,7 @@
 #include "arrayops.h"
 #include "move.h"
 #include "iterativeDeepening.h"
+#include "transpositionTable.h"
 
 #include <limits.h>
 #include <cstdint>
@@ -29,6 +30,8 @@ namespace Minimax
 
         float alpha;
         float beta;
+
+        TranspositionTable::Entry bestFollowing;
     };
     void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic);
     bool getMoveMinimax(uint8_t &x, uint8_t &y, bool &reachedMaxDepth, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime);

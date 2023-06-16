@@ -4,6 +4,8 @@
 #include "currentstate.h"
 #include "moves.h"
 #include "heuristics.h"
+#include "zobristKey.h"
+#include "debugUtils.hpp"
 
 #include <limits>
 #include <stack>
@@ -74,31 +76,60 @@ namespace Minimax
         // Iterative DFS
         while (!nodeStack.empty()) {
 
+            std::cout << "\n\nNode stack not empty!" << std::endl;
+
             if(!checkTimeLeft(stopTime)) {
                 std::cout << "No Time left, so break calculation and return with previous iteration" << std::endl;
                 return false;
             }
 
             Node &currentNode = nodeStack.top();
-            //std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
+            std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
+
+            // check TranspositionTable for this position
+            //Heuristics::printBoard(currentNode.board);
+            uint32_t *hash = ZobristKey::generateZobristValue(currentNode.board);
 
             // All moves done
             if (!currentNode.hasValidMoves()) {
-                //std::cout << "Node finished for player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
+                std::cout << "Node finished for player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
                 if (depth == 0) {
+                    //add first Node to Hashmap too???
                     break;
                 }
 
                 float compareVal = currentNode.value;
+                uint8_t bestfollowing_x = currentNode.bestFollowing.x;
+                uint8_t bestfollowing_y = currentNode.bestFollowing.y;
+                uint32_t *bestfollowing_zobristkey = currentNode.bestFollowing.zobristkey;
+                uint8_t bestfollowing_depth = currentNode.bestFollowing.depth;
 
                 --depth;
+
+                //add Node to Hashmap??? x, y values have to be the best found under this node
+                TranspositionTable::addEntry(currentNode.bestFollowing.zobristkey, currentNode.bestFollowing.x, currentNode.bestFollowing.y, currentNode.bestFollowing.depth, currentNode.bestFollowing.value);
+
                 nodeStack.pop();
 
+                std::cout << "We \t\t\tpoped \t\t\tthe \t\t\tlast \t\t\tnode" << std::endl;
+
                 Node &node = nodeStack.top();
+
+                std::cout << "Best value so far: " << node.value << " and new value found: " << compareVal << std::endl;
+
                 // Maximize
                 if (node.player == playerNumber) {
                     if (compareVal > node.value) {
                         node.value = compareVal;
+
+                        // TT -> set best following value and move
+                        std::cout << "Update own bestFollowing with better child in max" << std::endl;
+                        node.bestFollowing.x = bestfollowing_x;
+                        node.bestFollowing.y = bestfollowing_y;
+                        node.bestFollowing.value = compareVal;
+                        node.bestFollowing.depth = bestfollowing_depth;
+                        node.bestFollowing.zobristkey = bestfollowing_zobristkey;
+
                         if (depth == 0) {
                             x = currentRootMove.x;
                             y = currentRootMove.y;
@@ -114,6 +145,15 @@ namespace Minimax
                     if (compareVal < node.value) {
                         node.value = compareVal;
                     }
+
+                    // TT -> set best following value and move
+                    std::cout << "Update own bestFollowing with better child in min" << std::endl;
+                    node.bestFollowing.x = bestfollowing_x;
+                    node.bestFollowing.y = bestfollowing_y;
+                    node.bestFollowing.value = compareVal;
+                    node.bestFollowing.depth = bestfollowing_depth;
+                    node.bestFollowing.zobristkey = bestfollowing_zobristkey;
+
                     //Pruning -> update beta going up
                     if(node.value < node.beta){
                         node.beta = node.value;
@@ -154,7 +194,7 @@ namespace Minimax
             if (newNode.player == 0) {
                 isLeaf = true;
                 newNode.value = Heuristics::evaluateEndState(newNode.board, playerNumber);
-                //std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
+                std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
 
                 /*
                 // If game ended in depth 0 (needed in iterativeDeepening)
@@ -168,12 +208,13 @@ namespace Minimax
             else if (depth + 1 >= maxDepth) {
                 isLeaf = true;
                 newNode.value = heuristic(newNode.board, playerNumber);
-                //std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
+                std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
                 reachedMaxDepth = true;
             }
 
             // Leaf nodes are handled immediately -> aren't added to the stack
             if (isLeaf) {
+                std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << std::endl;
                 // Maximize
                 if (currentNode.player == playerNumber) {
                     if (newNode.value > currentNode.value) {
@@ -184,6 +225,13 @@ namespace Minimax
                         }
                         //Pruning -> set alpha to highest leaf node one depth above
                         currentNode.alpha = newNode.value;
+                        // TT -> get data for best move from this node
+                        std::cout << "Better than previous leave, so set bestFollowing" << std::endl;
+                        currentNode.bestFollowing.x = currentRootMove.x;
+                        currentNode.bestFollowing.y = currentRootMove.y;
+                        currentNode.bestFollowing.value = newNode.value;
+                        currentNode.bestFollowing.depth = depth + 1;
+                        currentNode.bestFollowing.zobristkey = ZobristKey::generateZobristValue(newNode.board);
                     }
                 }
                 // Minimize
@@ -192,6 +240,13 @@ namespace Minimax
                         currentNode.value = newNode.value;
                         //Pruning -> set beta to lowest leaf node one depth above
                         currentNode.beta = newNode.value;
+                        // TT -> get data for best move from this node
+                        std::cout << "Better than previous leave, so set bestFollowing" << std::endl;
+                        currentNode.bestFollowing.x = currentRootMove.x;
+                        currentNode.bestFollowing.y = currentRootMove.y;
+                        currentNode.bestFollowing.value = newNode.value;
+                        currentNode.bestFollowing.depth = depth + 1;
+                        currentNode.bestFollowing.zobristkey = ZobristKey::generateZobristValue(newNode.board);
                     }
                 }
             } 
@@ -208,9 +263,9 @@ namespace Minimax
                 }
 
                 ++depth;
-                /*
+
                 std::cout << "Created player " << (int)newNode.player << " node on depth " << (int)depth << std::endl;
-                std::cout << "Moves:" << std::endl;
+                /*std::cout << "Moves:" << std::endl;
                 for (auto &element : newNode.validMoves) {
                     std::cout << "X = " << (int)element.x << ", Y = " << (int)element.y << std::endl;
                 }

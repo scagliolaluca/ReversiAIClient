@@ -1,6 +1,7 @@
 #include "map.h"
 
 #include "mapPreprocessing.hpp"
+#include "zobristKey.h"
 
 #ifdef LOAD_LOGGING
 #include "debugUtils.hpp"
@@ -93,10 +94,13 @@ bool Map::loadMap(std::stringstream& mapStream) {
 #endif
 
     MapPreprocessing::createValueMask();
+    ZobristKey::createZobristKeyMask();
 
 #ifdef LOAD_LOGGING
     std::cout << "Value mask created:\n";
     DebugUtils::printArray(MapPreprocessing::tileValueMask, GameDetails::boardHeight, GameDetails::boardWidth);
+    std::cout << "ZobristKey mask created:\n";
+    DebugUtils::printArray(ZobristKey::zobristKeyMask, GameDetails::boardHeight, GameDetails::boardWidth, GameDetails::playerCount);
 #endif
 
     return true;
