@@ -13,11 +13,16 @@ namespace TranspositionTable
         uint8_t x, y;
         float value;
         uint8_t depth = UCHAR_MAX;
+        uint8_t calculatedDepth;
     };
 
+    extern Entry *entries;
+    extern const uint16_t size;
+    void createTranspositionTable();
+    void deleteTranspositionTable();
     bool alreadySeen(uint32_t zobrist);
-    void addEntry(uint32_t zobrist, uint8_t x, uint8_t y, uint8_t depth, float value);
-    void addLeaveEntry(uint32_t zobrist, uint8_t depth, float value);
+    void addEntry(uint32_t zobrist, uint8_t x, uint8_t y, uint8_t depth, uint8_t calculatedDepth, float value);
+    void addLeaveEntry(uint32_t zobrist, uint8_t depth, uint8_t calculatedDepth, float value);
 
 } // namespace TranspositionTable
 

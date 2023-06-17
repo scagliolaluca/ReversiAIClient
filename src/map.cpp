@@ -2,6 +2,7 @@
 
 #include "mapPreprocessing.hpp"
 #include "zobristKey.h"
+#include "transpositionTable.h"
 
 #ifdef LOAD_LOGGING
 #include "debugUtils.hpp"
@@ -95,12 +96,14 @@ bool Map::loadMap(std::stringstream& mapStream) {
 
     MapPreprocessing::createValueMask();
     ZobristKey::createZobristKeyMask();
+    TranspositionTable::createTranspositionTable();
 
 #ifdef LOAD_LOGGING
     std::cout << "Value mask created:\n";
     DebugUtils::printArray(MapPreprocessing::tileValueMask, GameDetails::boardHeight, GameDetails::boardWidth);
     std::cout << "ZobristKey mask created:\n";
     DebugUtils::printArray(ZobristKey::zobristKeyMask, GameDetails::boardHeight, GameDetails::boardWidth, GameDetails::playerCount);
+    std::cout << "Transposition Table created!\n";
 #endif
 
     return true;

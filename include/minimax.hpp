@@ -2,8 +2,9 @@
 
 #include "arrayops.h"
 #include "move.h"
-#include "iterativeDeepening.h"
 #include "transpositionTable.h"
+#include "iterativeDeepening.h"
+#include "zobristKey.h"
 
 #include <limits.h>
 #include <cstdint>

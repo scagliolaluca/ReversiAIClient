@@ -1,5 +1,4 @@
 #include "iterativeDeepening.h"
-
 #include <math.h>
 #include <iostream>
 
@@ -49,7 +48,7 @@ namespace IterativeDeepening
         //calculate left time
         auto currentTime = std::chrono::steady_clock::now();
         int64_t timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - currentTime).count();
-        std::cout << "\n======== Time left before " << int(iterationDepth) << " depth is\t" << timeLeft << " ========" << std::endl;
+        std::cout << "\n================================ Time left before " << int(iterationDepth) << " depth is\t" << timeLeft << " ================================" << std::endl;
 
         std::cout << "Last iteration:\t" << iterationDurations[0].count() * 1000 << "ms" << std::endl;
 
