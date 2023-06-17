@@ -27,6 +27,9 @@ namespace Minimax
 
         alpha = other.alpha;
         beta = other.beta;
+
+        moveToGetHere_x = other.moveToGetHere_x;
+        moveToGetHere_y = other.moveToGetHere_y;
     }
     Node::~Node() {
         delete2DArr(board, GameDetails::boardHeight);
@@ -105,6 +108,8 @@ namespace Minimax
                 float compareVal = currentNode.value;
                 uint8_t bestfollowing_x = currentNode.bestFollowing.x;
                 uint8_t bestfollowing_y = currentNode.bestFollowing.y;
+                std::cout << "Best Move after this node: " << int(bestfollowing_x) << int(bestfollowing_y) << std::endl;
+                std::cout << " Move to get here: " << int(currentNode.moveToGetHere_x) << int(currentNode.moveToGetHere_y) << std::endl;
 
                 //add Node to Hashmap
                 TranspositionTable::addEntry(ZobristKey::generateZobristValue(currentNode.board), currentNode.bestFollowing.x, currentNode.bestFollowing.y, depth, currentNode.value);
@@ -212,7 +217,7 @@ namespace Minimax
 
             // Leaf nodes are handled immediately -> aren't added to the stack
             if (isLeaf) {
-                std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << std::endl;
+                std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << " with value: " << newNode.value << std::endl;
                 // Maximize
                 if (currentNode.player == playerNumber) {
                     if (newNode.value > currentNode.value) {
@@ -224,9 +229,9 @@ namespace Minimax
                         //Pruning -> set alpha to highest leaf node one depth above
                         currentNode.alpha = newNode.value;
                         // TT -> get data for best move from this node
-                        std::cout << "Better than previous leave, so set bestFollowing" << std::endl;
-                        currentNode.bestFollowing.x = currentRootMove.x;
-                        currentNode.bestFollowing.y = currentRootMove.y;
+                        std::cout << "Better than previous leave, so set bestFollowing in max" << std::endl;
+                        currentNode.bestFollowing.x = currentMove.x;
+                        currentNode.bestFollowing.y = currentMove.y;
                         currentNode.bestFollowing.value = newNode.value;
                     }
                 }
@@ -237,9 +242,9 @@ namespace Minimax
                         //Pruning -> set beta to lowest leaf node one depth above
                         currentNode.beta = newNode.value;
                         // TT -> get data for best move from this node
-                        std::cout << "Better than previous leave, so set bestFollowing" << std::endl;
-                        currentNode.bestFollowing.x = currentRootMove.x;
-                        currentNode.bestFollowing.y = currentRootMove.y;
+                        std::cout << "Better than previous leave, so set bestFollowing in min" << std::endl;
+                        currentNode.bestFollowing.x = currentMove.x;
+                        currentNode.bestFollowing.y = currentMove.y;
                         currentNode.bestFollowing.value = newNode.value;
                     }
                 }
@@ -253,6 +258,12 @@ namespace Minimax
                 //Pruning -> pass down alpha and beta
                 newNode.alpha = currentNode.alpha;
                 newNode.beta = currentNode.beta;
+
+                // TT -> save move to get to this node
+                newNode.moveToGetHere_x = currentMove.x;
+                newNode.moveToGetHere_y = currentMove.y;
+
+                std::cout << "Move to get to this node saved: " << int(newNode.moveToGetHere_x) << int(newNode.moveToGetHere_y) << std::endl;
 
                 if (newNode.player == playerNumber) {
                     newNode.value = std::numeric_limits<float>::lowest();

@@ -32,6 +32,8 @@ namespace Minimax
         float beta;
 
         TranspositionTable::Entry bestFollowing;
+        uint8_t moveToGetHere_x;
+        uint8_t moveToGetHere_y;
     };
     void getMoveMinimax(uint8_t &x, uint8_t &y, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic);
     bool getMoveMinimax(uint8_t &x, uint8_t &y, bool &reachedMaxDepth, uint8_t **board, uint8_t playerNumber, uint8_t maxDepth, const std::function<float(uint8_t **, uint8_t)> &heuristic, const std::chrono::time_point<std::chrono::steady_clock> &stopTime);
