@@ -89,6 +89,13 @@ bool Map::loadMap(std::stringstream& mapStream) {
 
 #ifdef LOAD_LOGGING
     std::cout << "Map neighbors successfully populated\n";
+    std::cout << "\nCalculate reachable tiles...\n";
+#endif
+
+    MapPreprocessing::calculateReachableTiles();
+
+#ifdef LOAD_LOGGING
+    std::cout << "Reachable tiles successfully calculated\n";
     std::cout << "\nCreate value mask...\n";
 #endif
 
