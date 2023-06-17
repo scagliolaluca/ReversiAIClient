@@ -11,7 +11,17 @@ namespace Heuristics {
     uint8_t playerRanking(uint8_t **board, uint8_t playerNumber);
 
     // Heuristic
+    struct Weights {
+        int myPieces = 0;
+        int myPieceValue = 0;
+        int myMoves = 0;
+
+        int enemyPieces = 0;
+        int enemyPieceValue = 0;
+        int enemyMoves = 0;
+    };
     float normalizedHeuristic(uint8_t** board, uint8_t playerNumber);
+    Weights heuristicWeightsForGameProgress(float progress);
     float normalizedMyHeuristicValue(float myValue, float totalValue, uint8_t playerCount);
     float normalizedOthersHeuristicValue(float othersValue, float totalValue, uint8_t playerCount);
 
