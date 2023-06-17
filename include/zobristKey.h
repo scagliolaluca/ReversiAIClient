@@ -12,7 +12,7 @@ namespace ZobristKey
     void createZobristKeyMask();
     void deleteZobristKeyMask();
     uint32_t ***createZobristKeyValues();
-    uint32_t *generateZobristValue(uint8_t **board);
+    uint32_t generateZobristValue(uint8_t **board);
 
     template <class T>
     T*** createZeroInit3DArr(size_t sizeFirst, size_t sizeSecond, size_t sizeThird) {

@@ -88,7 +88,11 @@ namespace Minimax
 
             // check TranspositionTable for this position
             //Heuristics::printBoard(currentNode.board);
-            uint32_t *hash = ZobristKey::generateZobristValue(currentNode.board);
+            uint32_t hash = ZobristKey::generateZobristValue(currentNode.board);
+            // This position was seen and calculated before
+            if (TranspositionTable::alreadySeen(hash)) {
+                std::cout << "\n\n = = = = = = = = = = = = = = = = = = = = = =\t\t We had this position before! \t\t= = = = = = = = = = = = = = = = = = = = = = " << std::endl;
+            }
 
             // All moves done
             if (!currentNode.hasValidMoves()) {
@@ -101,13 +105,11 @@ namespace Minimax
                 float compareVal = currentNode.value;
                 uint8_t bestfollowing_x = currentNode.bestFollowing.x;
                 uint8_t bestfollowing_y = currentNode.bestFollowing.y;
-                uint32_t *bestfollowing_zobristkey = currentNode.bestFollowing.zobristkey;
-                uint8_t bestfollowing_depth = currentNode.bestFollowing.depth;
+
+                //add Node to Hashmap
+                TranspositionTable::addEntry(ZobristKey::generateZobristValue(currentNode.board), currentNode.bestFollowing.x, currentNode.bestFollowing.y, depth, currentNode.value);
 
                 --depth;
-
-                //add Node to Hashmap??? x, y values have to be the best found under this node
-                TranspositionTable::addEntry(currentNode.bestFollowing.zobristkey, currentNode.bestFollowing.x, currentNode.bestFollowing.y, currentNode.bestFollowing.depth, currentNode.bestFollowing.value);
 
                 nodeStack.pop();
 
@@ -122,13 +124,11 @@ namespace Minimax
                     if (compareVal > node.value) {
                         node.value = compareVal;
 
-                        // TT -> set best following value and move
+                        // TT -> set best following value and move to that value
                         std::cout << "Update own bestFollowing with better child in max" << std::endl;
                         node.bestFollowing.x = bestfollowing_x;
                         node.bestFollowing.y = bestfollowing_y;
                         node.bestFollowing.value = compareVal;
-                        node.bestFollowing.depth = bestfollowing_depth;
-                        node.bestFollowing.zobristkey = bestfollowing_zobristkey;
 
                         if (depth == 0) {
                             x = currentRootMove.x;
@@ -146,13 +146,11 @@ namespace Minimax
                         node.value = compareVal;
                     }
 
-                    // TT -> set best following value and move
+                    // TT -> set best following value and move to that value
                     std::cout << "Update own bestFollowing with better child in min" << std::endl;
                     node.bestFollowing.x = bestfollowing_x;
                     node.bestFollowing.y = bestfollowing_y;
                     node.bestFollowing.value = compareVal;
-                    node.bestFollowing.depth = bestfollowing_depth;
-                    node.bestFollowing.zobristkey = bestfollowing_zobristkey;
 
                     //Pruning -> update beta going up
                     if(node.value < node.beta){
@@ -230,8 +228,6 @@ namespace Minimax
                         currentNode.bestFollowing.x = currentRootMove.x;
                         currentNode.bestFollowing.y = currentRootMove.y;
                         currentNode.bestFollowing.value = newNode.value;
-                        currentNode.bestFollowing.depth = depth + 1;
-                        currentNode.bestFollowing.zobristkey = ZobristKey::generateZobristValue(newNode.board);
                     }
                 }
                 // Minimize
@@ -245,10 +241,13 @@ namespace Minimax
                         currentNode.bestFollowing.x = currentRootMove.x;
                         currentNode.bestFollowing.y = currentRootMove.y;
                         currentNode.bestFollowing.value = newNode.value;
-                        currentNode.bestFollowing.depth = depth + 1;
-                        currentNode.bestFollowing.zobristkey = ZobristKey::generateZobristValue(newNode.board);
                     }
                 }
+                // Add leave to TT, but not all information available: (nextMove missing)
+                Heuristics::printBoard(newNode.board);
+                uint32_t hash2 = ZobristKey::generateZobristValue(newNode.board);
+                std::cout << "New ZobristKey for Leave: " << hash2 << " " << &hash2 << std::endl;
+                TranspositionTable::addLeaveEntry(hash2, depth+1, newNode.value);
             } 
             else {
                 //Pruning -> pass down alpha and beta

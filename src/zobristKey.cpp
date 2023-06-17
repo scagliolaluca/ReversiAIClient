@@ -47,9 +47,9 @@ namespace ZobristKey
         return mask;
     }
 
-    uint32_t *generateZobristValue(uint8_t **board) {
+    uint32_t generateZobristValue(uint8_t **board) {
         std::cout << "Create a new ZobristHash" << std::endl;
-        uint32_t h;
+        uint32_t h = 0;
         for (int i = 0; i < GameDetails::boardHeight; i++) {
             for (int j = 0; j < GameDetails::boardWidth; j++) {
                 // for all fields that have a piece
@@ -57,13 +57,12 @@ namespace ZobristKey
                     //std::cout << std::bitset<32>(h) << "\t" << h << std::endl;
                     //std::cout << std::bitset<32>(zobristKeyMask[i][j][board[i][j]-1]) << "\t" << zobristKeyMask[i][j][board[i][j]-1] << std::endl;
                     h = h ^ zobristKeyMask[i][j][board[i][j]-1];
-                    //std::cout << std::bitset<32>(h) << "\t" << h << std::endl;
+                    std::cout << std::bitset<32>(h) << "\t" << h << "\t" << &h << std::endl;
                     //std::cout << std::endl;
                 }
             }
         }
-        uint32_t *hash = &h;
-        return hash;
+        return h;
     }
 
 
