@@ -23,11 +23,15 @@ namespace BRSP {
             uint8_t newX = move.x;
             uint8_t newY = move.y;
 
-            uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
-            Heuristics::copyBoard(boardcopy, board);
+            uint8_t** boardcopy = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
             Moves::makeMove(boardcopy, newX, newY, playerNumber);
-
-            float moveValue = BRSPHelper(boardcopy, depth - 1, 1, playerNumber, playerNumber, heuristic, stopTime); 
+            
+            float moveValue = std::numeric_limits<float>::lowest();
+            try{
+                moveValue = BRSPHelper(boardcopy, depth - 1, 1, playerNumber, playerNumber, heuristic, stopTime); 
+            }catch(const std::exception& e){
+                return false; //time over
+            }
 
             if (moveValue > bestValue) {
                 bestValue = moveValue;
@@ -44,10 +48,11 @@ namespace BRSP {
             return heuristic(board, playerNumber);
         }
         if (std::chrono::steady_clock::now() >= stopTime) {
-            return 0.0; 
+            throw std::runtime_error("not enough time");
         }
 
         bool maximizingPlayer = playerNumber == maxnumber;
+        bool nextIsMaxPlayer = (playerNumber + 1) % GameDetails::playerCount == maxnumber;
         std::vector<Move> availableMoves;
         Moves::populateValidMoves(availableMoves, board, playerNumber);
 
@@ -55,83 +60,42 @@ namespace BRSP {
             float bestValue = std::numeric_limits<float>::lowest();
 
             for (const auto& move : availableMoves) {
-                uint8_t newX = move.x;
-                uint8_t newY = move.y;
-
-                uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
-                Heuristics::copyBoard(boardcopy, board);
-                Moves::makeMove(boardcopy, newX, newY, playerNumber);
+                uint8_t** boardcopy = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
+                Moves::makeMove(boardcopy, move.x, move.y, playerNumber);
 
                 float moveValue = BRSPHelper(board, depth - 1, 1, (playerNumber + 1) % GameDetails::playerCount, maxnumber, heuristic, stopTime); 
-
                 bestValue = std::max(bestValue, moveValue);
+                delete2DArr(boardcopy,GameDetails::boardHeight);
             }
-
             return bestValue;
         } else {
             float bestValue = std::numeric_limits<float>::max();
-            if(normalMovesLeft < 1){
+
+            if(normalMovesLeft == 0 || (normalMovesLeft > 0 && !nextIsMaxPlayer)){
                 int i = rand() % availableMoves.size(); //picking random move as special move
                 Move specialMove = availableMoves[i];
                 availableMoves.erase(availableMoves.begin()+i);
-
-                uint8_t newX = specialMove.x;
-                uint8_t newY = specialMove.y;
                 
-                uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
-                Heuristics::copyBoard(boardcopy, board);
-                Moves::makeMove(boardcopy, newX, newY, playerNumber);
+                uint8_t** boardcopy = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
+                Moves::makeMove(boardcopy, specialMove.x, specialMove.y, playerNumber);
 
                 float moveValue = BRSPHelper(board, depth - 1, normalMovesLeft, (playerNumber + 1) % GameDetails::playerCount, maxnumber, heuristic, stopTime);
-
                 bestValue = std::min(bestValue, moveValue);
-                return bestValue;
+                delete2DArr(boardcopy,GameDetails::boardHeight);
             }
-            else if (normalMovesLeft > 0 && (playerNumber + 1) % GameDetails::playerCount == maxnumber) //muss normal moves anschauen da nächster wieder max ist
-            {
+
+            if(normalMovesLeft > 0){
                 for (const auto& move : availableMoves) {
-                    uint8_t newX = move.x;
-                    uint8_t newY = move.y;
-                    
-                    uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
-                    Heuristics::copyBoard(boardcopy, board);
-                    Moves::makeMove(boardcopy, newX, newY, playerNumber);
+                    uint8_t** boardcopy = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
+                    Moves::makeMove(boardcopy, move.x, move.y, playerNumber);
 
                     float moveValue = BRSPHelper(board, depth - 1, normalMovesLeft-1 , (playerNumber + 1) % GameDetails::playerCount, maxnumber, heuristic, stopTime);
-
                     bestValue = std::min(bestValue, moveValue);
+                    delete2DArr(boardcopy,GameDetails::boardHeight);
                 }
-                return bestValue;
-            }else{ //nächster ist min und wir haben normalmove übrig, alles betrachten
-                int i = rand() % availableMoves.size(); //picking random move as special move
-                Move specialMove = availableMoves[i];
-                availableMoves.erase(availableMoves.begin()+i);
-
-                uint8_t newX = specialMove.x;
-                uint8_t newY = specialMove.y;
-                
-                uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
-                Heuristics::copyBoard(boardcopy, board);
-                Moves::makeMove(boardcopy, newX, newY, playerNumber);
-
-                float moveValue = BRSPHelper(board, depth - 1, 1, (playerNumber + 1) % GameDetails::playerCount, maxnumber, heuristic, stopTime);
-
-                bestValue = std::min(bestValue, moveValue);
-
-                for (const auto& move : availableMoves) {
-                    uint8_t newX = move.x;
-                    uint8_t newY = move.y;
-                    
-                    uint8_t** boardcopy = create2DArr<uint8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
-                    Heuristics::copyBoard(boardcopy, board);
-                    Moves::makeMove(boardcopy, newX, newY, playerNumber);
-
-                    float moveValue = BRSPHelper(board, depth - 1, normalMovesLeft-1 , (playerNumber + 1) % GameDetails::playerCount, maxnumber, heuristic, stopTime);
-
-                    bestValue = std::min(bestValue, moveValue);
-                }
-                return bestValue;
             }
+
+            return bestValue;
         }
     }
 }
