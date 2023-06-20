@@ -16,7 +16,6 @@ namespace IterativeDeepening
         iterationDurations.push_front(std::chrono::duration<double>(0));
 
         while(timeForNextIteration(iterationDepth, stopTime, iterationDurations) && miniMaxReachedMaxDepth){
-
             auto iterationStart = std::chrono::steady_clock::now();
             // If Minimax returns true --> continueCalculation
             if(Minimax::getMoveMinimax(tempx, tempy, miniMaxReachedMaxDepth, board, playerNumber, iterationDepth, heuristic, stopTime)){

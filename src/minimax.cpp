@@ -79,7 +79,7 @@ namespace Minimax
         // Iterative DFS
         while (!nodeStack.empty()) {
 
-            std::cout << "\nNode stack not empty!" << std::endl;
+            //std::cout << "Node stack not empty!" << std::endl;
 
             if(!checkTimeLeft(stopTime)) {
                 std::cout << "No Time left, so break calculation and return with previous iteration" << std::endl;
@@ -87,26 +87,87 @@ namespace Minimax
             }
 
             Node &currentNode = nodeStack.top();
-            //std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
+            //std::cout << "Current node player " << int(currentNode.player) << " on depth " << int(depth) << std::endl;
 
             // check TranspositionTable for this position
             uint32_t hash = ZobristKey::generateZobristValue(currentNode.board, currentNode.player);
             // This position was seen and calculated before
             if (TranspositionTable::alreadySeen(hash)) {
-                std::cout << "\n = = = = = = = = = = = = = = = = = = = = = =We had this position before!= = = = = = = = = = = = = = = = = = \n" << std::endl;
-                TranspositionTable::Entry prevCalc = TranspositionTable::getEntry(hash);
-                std::cout << "Current MaxDepth: " << (int)maxDepth << " Current Depth: " << (int)depth << std::endl;
-                std::cout << "X and Y: " << (int)prevCalc.x << (int)prevCalc.y << " This state was evaluated at depth :" << (int)prevCalc.depth << " Found Value: " << prevCalc.value << " at depth: " << (int)prevCalc.calculatedDepth << std::endl;
-                if (prevCalc.calculatedDepth - prevCalc.depth >= maxDepth - depth) {
-                    std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = = \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << std::endl;
+                TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(hash);
+
+                // The TT entry can be used, don't calculate deeper from this node
+                if (prevCalc->calculatedDepth - prevCalc->depth >= maxDepth - depth) {
+                    std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
+                    std::cout << "Current MaxDepth: " << int(maxDepth) << " Current Depth: " << int(depth) << std::endl;
+                    std::cout << "X and Y: " << int(prevCalc->x) << int(prevCalc->y) << " This state was evaluated at depth:" << int(prevCalc->depth) << " Found Value: " << prevCalc->value << " at depth: " << int(prevCalc->calculatedDepth) << std::endl;
+
+                    // if first (root) node -> simply return
+                    if (depth == 0) {
+                        std::cout << "found replacement at root" << std::endl;
+                        x = prevCalc->x;
+                        y = prevCalc->y;
+                        reachedMaxDepth = true;
+                        break;
+                    }
+
+                    uint8_t moveToGetHere_x = currentNode.moveToGetHere_x;
+                    uint8_t moveToGetHere_y = currentNode.moveToGetHere_y;
+                    --depth;
+                    nodeStack.pop();
+                    Node &node = nodeStack.top();
+
+                    //std::cout << "Best value so far: " << node.value << " and new value found: " << prevCalc->value << std::endl;
+
+                    // Maximize
+                    if (node.player == playerNumber) {
+                        if (prevCalc->value > node.value) {
+                            node.value = prevCalc->value;
+
+                            // TT -> set best following value and move to that value
+                            //std::cout << "Update own bestFollowing with better child in max" << std::endl;
+                            node.bestFollowing.x = moveToGetHere_x;
+                            node.bestFollowing.y = moveToGetHere_y;
+                            node.bestFollowing.value = prevCalc->value;
+                            node.bestFollowing.calculatedDepth = prevCalc->calculatedDepth;
+
+                            if (depth == 0) {
+                                x = currentRootMove.x;
+                                y = currentRootMove.y;
+                            }
+                        }
+                        //Pruning -> update alpha going up
+                        if(node.value > node.alpha){
+                            node.alpha = node.value;
+                        }
+                    }
+                        // Minimize
+                    else {
+                        if (prevCalc->value < node.value) {
+                            node.value = prevCalc->value;
+                        }
+
+                        // TT -> set best following value and move to that value
+                        //std::cout << "Update own bestFollowing with better child in min" << std::endl;
+                        node.bestFollowing.x = moveToGetHere_x;
+                        node.bestFollowing.y = moveToGetHere_y;
+                        node.bestFollowing.value = prevCalc->value;
+                        node.bestFollowing.calculatedDepth = prevCalc->calculatedDepth;
+
+                        //Pruning -> update beta going up
+                        if(node.value < node.beta){
+                            node.beta = node.value;
+                        }
+
+                    }
+                    reachedMaxDepth = true;
+                    continue;
                 }
             }
-
             // All moves done
             if (!currentNode.hasValidMoves()) {
-                std::cout << "Node finished for player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
+                //std::cout << "Node finished for player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
                 if (depth == 0) {
-                    //add first Node to Hashmap too???
+                    //add first Node to TT too???
                     break;
                 }
 
@@ -184,27 +245,25 @@ namespace Minimax
                 continue;
             }
 
-
             // Generate new node
             const Move &currentMove = currentNode.nextMove();
             if (depth == 0) {
                 currentRootMove = currentMove;
             }
-
             Node newNode;
+
             // new Board
             newNode.board = copy2DArr(currentNode.board, GameDetails::boardHeight, GameDetails::boardWidth);
             Moves::makeMove(newNode.board, currentMove.x, currentMove.y, currentNode.player);
 
             // new Player + Moves
             newNode.player = nextValidPlayerMoves(newNode.validMoves, newNode.board, currentNode.player);
-
             bool isLeaf = false;
             // If game ended
             if (newNode.player == 0) {
                 isLeaf = true;
                 newNode.value = Heuristics::evaluateEndState(newNode.board, playerNumber);
-                std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
+                //std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
 
                 /*
                 // If game ended in depth 0 (needed in iterativeDeepening)
@@ -218,13 +277,12 @@ namespace Minimax
             else if (depth + 1 >= maxDepth) {
                 isLeaf = true;
                 newNode.value = heuristic(newNode.board, playerNumber);
-                std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
+                //std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
                 reachedMaxDepth = true;
             }
-
             // Leaf nodes are handled immediately -> aren't added to the stack
             if (isLeaf) {
-                std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << " with value: " << newNode.value << std::endl;
+                //std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << " with value: " << newNode.value << std::endl;
                 // Maximize
                 if (currentNode.player == playerNumber) {
                     if (newNode.value > currentNode.value) {
@@ -236,7 +294,7 @@ namespace Minimax
                         //Pruning -> set alpha to highest leaf node one depth above
                         currentNode.alpha = newNode.value;
                         // TT -> get data for best move from this node
-                        std::cout << "Better than previous leave, so set bestFollowing in max" << std::endl;
+                        //std::cout << "Better than previous leave, so set bestFollowing in max" << std::endl;
                         currentNode.bestFollowing.x = currentMove.x;
                         currentNode.bestFollowing.y = currentMove.y;
                         currentNode.bestFollowing.value = newNode.value;
@@ -250,7 +308,7 @@ namespace Minimax
                         //Pruning -> set beta to lowest leaf node one depth above
                         currentNode.beta = newNode.value;
                         // TT -> get data for best move from this node
-                        std::cout << "Better than previous leave, so set bestFollowing in min" << std::endl;
+                        //std::cout << "Better than previous leave, so set bestFollowing in min" << std::endl;
                         currentNode.bestFollowing.x = currentMove.x;
                         currentNode.bestFollowing.y = currentMove.y;
                         currentNode.bestFollowing.value = newNode.value;
@@ -282,12 +340,12 @@ namespace Minimax
 
                 ++depth;
 
-                //std::cout << "Created player " << (int)newNode.player << " node on depth " << (int)depth << std::endl;
-                /*std::cout << "Moves:" << std::endl;
+                /*std::cout << "Created player " << (int)newNode.player << " node on depth " << (int)depth << std::endl;
+                std::cout << "Moves:" << std::endl;
                 for (auto &element : newNode.validMoves) {
                     std::cout << "X = " << (int)element.x << ", Y = " << (int)element.y << std::endl;
-                }
-                */
+                }*/
+
                 nodeStack.push(std::move(newNode));
             }
         }
@@ -312,7 +370,6 @@ namespace Minimax
         if (nextPlayer > GameDetails::playerCount) {
             nextPlayer = 1;
         }
-
         while (nextPlayer != currentPlayer) {
             if (CurrentState::playerArr[nextPlayer-1].isDisqualified) {
                 ++nextPlayer;
@@ -332,7 +389,6 @@ namespace Minimax
             //sort moves for pruning
             // TODO improve efficiency; not in leafs
             sortMoves(validMoves, board, nextPlayer);
-
             return nextPlayer;
         } 
 
@@ -342,10 +398,12 @@ namespace Minimax
     void sortMoves(std::vector<Move> &moves, uint8_t **board, uint8_t player){
         int vectorSize = moves.size();
         //create vector with values from evaluation function
-        std::vector<int> resultVector(vectorSize); 
+        std::vector<int> resultVector(vectorSize);
         for (int i = 0; i < vectorSize; i++) {
+
             //copy board
             uint8_t** boardCopy = new uint8_t*[GameDetails::boardHeight];
+
             for (int i = 0; i < GameDetails::boardHeight; i++) {
                 boardCopy[i] = new uint8_t[GameDetails::boardWidth];
             }
@@ -354,16 +412,13 @@ namespace Minimax
                 memcpy(boardCopy[j], board[j], GameDetails::boardWidth*sizeof(uint8_t));
             }
 
-
             Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
             resultVector[i] = Heuristics::getScore(boardCopy, GameDetails::playerNumber);
-
             // Delete the array created
             for (int i = 0; i < GameDetails::boardHeight; i++)
                 delete[] boardCopy[i];
             delete[] boardCopy;
         }
-
         // Create a vector of indices
         std::vector<short int> indices(vectorSize);
         std::iota(indices.begin(), indices.end(), 0); 
@@ -373,14 +428,12 @@ namespace Minimax
             return resultVector[a] < resultVector[b];
         });
 
-
         // Rearrange the moves based on the sorted indices
         std::vector<Move> sortedMoves;
         sortedMoves.reserve(vectorSize);
         for (size_t i = 0; i < indices.size(); ++i) {
             sortedMoves.push_back(moves[indices[i]]);
         }
-
         moves.assign(sortedMoves.begin(), sortedMoves.end());
         //std::cout << "sorting:" << (int)moves[0].x << "/////" << (int)moves[0].y<< std::endl;
         return;
