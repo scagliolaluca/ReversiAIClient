@@ -90,8 +90,7 @@ namespace Minimax
             std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
 
             // check TranspositionTable for this position
-            //Heuristics::printBoard(currentNode.board);
-            uint32_t hash = ZobristKey::generateZobristValue(currentNode.board);
+            uint32_t hash = ZobristKey::generateZobristValue(currentNode.board, currentNode.player);
             // This position was seen and calculated before
             if (TranspositionTable::alreadySeen(hash)) {
                 std::cout << "\n = = = = = = = = = = = = = = = = = = = = = =We had this position before!= = = = = = = = = = = = = = = = = = \n" << std::endl;
@@ -114,7 +113,7 @@ namespace Minimax
                 std::cout << " Reached value: " << compareVal << " in depth: " << int(calculatedDepth) << std::endl;
 
                 //add Node to Hashmap
-                TranspositionTable::addEntry(ZobristKey::generateZobristValue(currentNode.board), currentNode.bestFollowing.x, currentNode.bestFollowing.y, depth, calculatedDepth, compareVal);
+                TranspositionTable::addEntry(hash, currentNode.bestFollowing.x, currentNode.bestFollowing.y, depth, calculatedDepth, compareVal);
 
                 --depth;
 
@@ -256,7 +255,7 @@ namespace Minimax
                 }
                 // Add leave to TT, but not all information available: (nextMove missing)
                 Heuristics::printBoard(newNode.board);
-                uint32_t hash2 = ZobristKey::generateZobristValue(newNode.board);
+                uint32_t hash2 = ZobristKey::generateZobristValue(newNode.board, newNode.player);
                 TranspositionTable::addLeaveEntry(hash2, depth+1, depth+1, newNode.value);
             } 
             else {

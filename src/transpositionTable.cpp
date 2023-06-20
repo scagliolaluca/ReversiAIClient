@@ -99,7 +99,7 @@ namespace TranspositionTable
             // if keys are the same
             if (*entry->zobristkey == zobrist){
                 std::cout << "This gamestate was reached already! " << std::endl;
-                / Check if new gamestate searched deeper //TODO: Check at which level this node is
+                // Check if new gamestate searched deeper //TODO: Check at which level this node is
                 if (calculatedDepth > entry->calculatedDepth){
                     std::cout << "But new result goes deeper (better) --> update" << std::endl;
                     entry->depth = depth;

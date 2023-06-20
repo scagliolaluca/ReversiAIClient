@@ -9,10 +9,14 @@
 namespace ZobristKey
 {
     extern uint32_t ***zobristKeyMask;
+    extern uint32_t *whosTurnMask;
     void createZobristKeyMask();
     void deleteZobristKeyMask();
     uint32_t ***createZobristKeyValues();
-    uint32_t generateZobristValue(uint8_t **board);
+    void createWhosTurnMask();
+    void deleteWhosTurnMask();
+    uint32_t *createWhosTurnMaskValues();
+    uint32_t generateZobristValue(uint8_t **board, uint8_t player);
 
     template <class T>
     T*** createZeroInit3DArr(size_t sizeFirst, size_t sizeSecond, size_t sizeThird) {

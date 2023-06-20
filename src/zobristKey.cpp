@@ -10,20 +10,22 @@
 namespace ZobristKey
 {
     uint32_t ***zobristKeyMask = nullptr;
+    uint32_t *whosTurnMask = nullptr;
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<uint32_t> distrib(0, LONG_MAX);
 
     void createZobristKeyMask() {
-    std::cout << "Create Zobrist Key Mask..." << std::endl;
+        std::cout << "Create Zobrist Key Mask..." << std::endl;
         if (zobristKeyMask) {
             deleteZobristKeyMask();
         }
         zobristKeyMask = createZobristKeyValues();
+        return;
     }
 
     void deleteZobristKeyMask() {
-    std::cout << "Delete Zobrist Key Maks" << std::endl;
+        std::cout << "Delete Zobrist Key Maks" << std::endl;
         delete3DArr(zobristKeyMask, GameDetails::boardHeight, GameDetails::boardWidth);
         zobristKeyMask = nullptr;
         return;
@@ -47,9 +49,35 @@ namespace ZobristKey
         return mask;
     }
 
-    uint32_t generateZobristValue(uint8_t **board) {
+    void createWhosTurnMask() {
+        std::cout << "Create Zobrist Key for players..." << std::endl;
+        if (whosTurnMask) {
+            deleteWhosTurnMask();
+        }
+        whosTurnMask = createWhosTurnMaskValues();
+        return;
+    }
+
+    void deleteWhosTurnMask() {
+        std::cout << "Delete Zobrist Key for players..." << std::endl;
+        delete[] zobristKeyMask;
+        zobristKeyMask = nullptr;
+        return;
+    }
+
+    uint32_t *createWhosTurnMaskValues() {
+        uint32_t *mask = new uint32_t[GameDetails::playerCount]();
+        for (int i = 0; i < GameDetails::playerCount; i++) {
+            mask[i] = distrib(rng);
+        }
+        return mask;
+    }
+
+    uint32_t generateZobristValue(uint8_t **board, uint8_t player) {
         std::cout << "\nCreate a new ZobristHash" << std::endl;
         uint32_t h = 0;
+        h = h ^ whosTurnMask[player];
+        std::cout << "Mask for player: " << int(player) << std::endl;
         for (int i = 0; i < GameDetails::boardHeight; i++) {
             for (int j = 0; j < GameDetails::boardWidth; j++) {
                 // for all fields that have a piece
