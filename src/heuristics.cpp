@@ -56,7 +56,7 @@ namespace Heuristics
         // Obtain the actual rank
         uint8_t rank = 1;
         int prevPlayerScore = -1;
-        for (uint i = 0; i < players.size(); ++i) {
+        for (unsigned int i = 0; i < players.size(); ++i) {
             if (pieceCounts[i] != prevPlayerScore) {
                 rank = i + 1;
             }
