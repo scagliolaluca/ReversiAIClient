@@ -79,7 +79,7 @@ namespace Minimax
         // Iterative DFS
         while (!nodeStack.empty()) {
 
-            std::cout << "\n\nNode stack not empty!" << std::endl;
+            std::cout << "\nNode stack not empty!" << std::endl;
 
             if(!checkTimeLeft(stopTime)) {
                 std::cout << "No Time left, so break calculation and return with previous iteration" << std::endl;
@@ -87,13 +87,19 @@ namespace Minimax
             }
 
             Node &currentNode = nodeStack.top();
-            std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
+            //std::cout << "Current node player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
 
             // check TranspositionTable for this position
             uint32_t hash = ZobristKey::generateZobristValue(currentNode.board, currentNode.player);
             // This position was seen and calculated before
             if (TranspositionTable::alreadySeen(hash)) {
                 std::cout << "\n = = = = = = = = = = = = = = = = = = = = = =We had this position before!= = = = = = = = = = = = = = = = = = \n" << std::endl;
+                TranspositionTable::Entry prevCalc = TranspositionTable::getEntry(hash);
+                std::cout << "Current MaxDepth: " << (int)maxDepth << " Current Depth: " << (int)depth << std::endl;
+                std::cout << "X and Y: " << (int)prevCalc.x << (int)prevCalc.y << " This state was evaluated at depth :" << (int)prevCalc.depth << " Found Value: " << prevCalc.value << " at depth: " << (int)prevCalc.calculatedDepth << std::endl;
+                if (prevCalc.calculatedDepth - prevCalc.depth >= maxDepth - depth) {
+                    std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = = \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << std::endl;
+                }
             }
 
             // All moves done
@@ -108,9 +114,9 @@ namespace Minimax
                 uint8_t calculatedDepth = currentNode.bestFollowing.calculatedDepth;
                 uint8_t moveToGetHere_x = currentNode.moveToGetHere_x;
                 uint8_t moveToGetHere_y = currentNode.moveToGetHere_y;
-                std::cout << "Best Move after this node: " << int(currentNode.bestFollowing.x) << int(currentNode.bestFollowing.y) << std::endl;
-                std::cout << " Move to get here: " << int(currentNode.moveToGetHere_x) << int(currentNode.moveToGetHere_y) << std::endl;
-                std::cout << " Reached value: " << compareVal << " in depth: " << int(calculatedDepth) << std::endl;
+                //std::cout << "Best Move after this node: " << int(currentNode.bestFollowing.x) << int(currentNode.bestFollowing.y) << std::endl;
+                //std::cout << " Move to get here: " << int(currentNode.moveToGetHere_x) << int(currentNode.moveToGetHere_y) << std::endl;
+                //std::cout << " Reached value: " << currentNode.value << " in depth: " << int(currentNode.bestFollowing.calculatedDepth) << std::endl;
 
                 //add Node to Hashmap
                 TranspositionTable::addEntry(hash, currentNode.bestFollowing.x, currentNode.bestFollowing.y, depth, calculatedDepth, compareVal);
@@ -119,11 +125,9 @@ namespace Minimax
 
                 nodeStack.pop();
 
-                std::cout << "We \t\t\tpoped \t\t\tthe \t\t\tlast \t\t\tnode" << std::endl;
-
                 Node &node = nodeStack.top();
 
-                std::cout << "Best value so far: " << node.value << " and new value found: " << compareVal << std::endl;
+                //std::cout << "Best value so far: " << node.value << " and new value found: " << compareVal << std::endl;
 
                 // Maximize
                 if (node.player == playerNumber) {
@@ -131,7 +135,7 @@ namespace Minimax
                         node.value = compareVal;
 
                         // TT -> set best following value and move to that value
-                        std::cout << "Update own bestFollowing with better child in max" << std::endl;
+                        //std::cout << "Update own bestFollowing with better child in max" << std::endl;
                         node.bestFollowing.x = moveToGetHere_x;
                         node.bestFollowing.y = moveToGetHere_y;
                         node.bestFollowing.value = compareVal;
@@ -154,7 +158,7 @@ namespace Minimax
                     }
 
                     // TT -> set best following value and move to that value
-                    std::cout << "Update own bestFollowing with better child in min" << std::endl;
+                    //std::cout << "Update own bestFollowing with better child in min" << std::endl;
                     node.bestFollowing.x = moveToGetHere_x;
                     node.bestFollowing.y = moveToGetHere_y;
                     node.bestFollowing.value = compareVal;
@@ -254,7 +258,7 @@ namespace Minimax
                     }
                 }
                 // Add leave to TT, but not all information available: (nextMove missing)
-                Heuristics::printBoard(newNode.board);
+                //Heuristics::printBoard(newNode.board);
                 uint32_t hash2 = ZobristKey::generateZobristValue(newNode.board, newNode.player);
                 TranspositionTable::addLeaveEntry(hash2, depth+1, depth+1, newNode.value);
             } 
@@ -267,7 +271,7 @@ namespace Minimax
                 newNode.moveToGetHere_x = currentMove.x;
                 newNode.moveToGetHere_y = currentMove.y;
 
-                std::cout << "Move to get to this node saved: " << int(newNode.moveToGetHere_x) << int(newNode.moveToGetHere_y) << std::endl;
+                //std::cout << "Move to get to this node saved: " << int(newNode.moveToGetHere_x) << int(newNode.moveToGetHere_y) << std::endl;
 
                 if (newNode.player == playerNumber) {
                     newNode.value = std::numeric_limits<float>::lowest();
@@ -278,7 +282,7 @@ namespace Minimax
 
                 ++depth;
 
-                std::cout << "Created player " << (int)newNode.player << " node on depth " << (int)depth << std::endl;
+                //std::cout << "Created player " << (int)newNode.player << " node on depth " << (int)depth << std::endl;
                 /*std::cout << "Moves:" << std::endl;
                 for (auto &element : newNode.validMoves) {
                     std::cout << "X = " << (int)element.x << ", Y = " << (int)element.y << std::endl;

@@ -74,10 +74,10 @@ namespace ZobristKey
     }
 
     uint32_t generateZobristValue(uint8_t **board, uint8_t player) {
-        std::cout << "\nCreate a new ZobristHash" << std::endl;
+        //std::cout << "\nCreate a new ZobristHash" << std::endl;
         uint32_t h = 0;
         h = h ^ whosTurnMask[player];
-        std::cout << "Mask for player: " << int(player) << std::endl;
+        //std::cout << "Mask for player: " << int(player) << std::endl;
         for (int i = 0; i < GameDetails::boardHeight; i++) {
             for (int j = 0; j < GameDetails::boardWidth; j++) {
                 // for all fields that have a piece
@@ -90,7 +90,7 @@ namespace ZobristKey
                 }
             }
         }
-        std::cout << h << std::endl;
+        //std::cout << h << std::endl;
         return h;
     }
 

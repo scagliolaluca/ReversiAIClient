@@ -23,6 +23,7 @@ namespace TranspositionTable
     bool alreadySeen(uint32_t zobrist);
     void addEntry(uint32_t zobrist, uint8_t x, uint8_t y, uint8_t depth, uint8_t calculatedDepth, float value);
     void addLeaveEntry(uint32_t zobrist, uint8_t depth, uint8_t calculatedDepth, float value);
+    Entry getEntry(uint32_t zobrist);
 
 } // namespace TranspositionTable
 
