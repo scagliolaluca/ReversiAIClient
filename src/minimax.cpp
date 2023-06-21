@@ -245,11 +245,13 @@ namespace Minimax
 
             //ealuate board after move
             Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
-            resultVector[i] = Heuristics::getScore(boardCopy, GameDetails::playerNumber);
+            resultVector[i] = Heuristics::getScore(boardCopy, player);
 
             // Delete copy
             delete2DArr(boardCopy, GameDetails::boardHeight);
         }
+
+        return resultVector;
     }
 
 
@@ -260,7 +262,7 @@ namespace Minimax
         resultVector = getEvaluationVector(moves, board, player);
 
         // Sort the array based on the values of the 'values' vector
-        std::sort(moves.begin(), moves.end(), [&resultVector, &moves](int a, int b) {
+        std::sort(moves.begin(), moves.end(), [&resultVector, &moves](Move& a, Move& b) {
             // Find the indices of 'a' and 'b' in the 'resultVector' vector
             auto it_a = std::find(moves.begin(), moves.end(), a);
             auto it_b = std::find(moves.begin(), moves.end(), b);
@@ -268,7 +270,9 @@ namespace Minimax
             return resultVector[std::distance(moves.begin(), it_a)] > resultVector[std::distance(moves.begin(), it_b)];
         });
 
-        
+        for (auto move: moves){
+            std::cout << "x: "  << (int)move.x << "| y: " << (int)move.y << "\n";
+            }
         return;
     }
 
