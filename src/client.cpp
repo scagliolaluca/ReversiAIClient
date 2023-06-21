@@ -82,7 +82,7 @@ void Client::runClient() {
 #endif
                     auto startTime = std::chrono::steady_clock::now();
                     auto stopTime = startTime + std::chrono::milliseconds(CurrentState::timelimit);
-                    IterativeDeepening::getMoveIterativeDeepening(x, y, CurrentState::boardArr, GameDetails::playerNumber, Heuristics::weightedHeuristic, stopTime);
+                    IterativeDeepening::getMoveIterativeDeepening(x, y, CurrentState::boardArr, GameDetails::playerNumber, Heuristics::normalizedHeuristic, stopTime);
 #ifdef CLIENT_LOGGING
                     auto endTime = std::chrono::steady_clock::now();
                     int64_t d = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
@@ -97,7 +97,7 @@ void Client::runClient() {
                               << "Searching for move...\n";
                     auto startTime = std::chrono::steady_clock::now();
 #endif
-                    Minimax::getMoveMinimax(x, y, CurrentState::boardArr, GameDetails::playerNumber, CurrentState::searchDepth, Heuristics::weightedHeuristic);
+                    Minimax::getMoveMinimax(x, y, CurrentState::boardArr, GameDetails::playerNumber, CurrentState::searchDepth, Heuristics::normalizedHeuristic);
 #ifdef CLIENT_LOGGING
                     auto endTime = std::chrono::steady_clock::now();
                     int64_t d = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
