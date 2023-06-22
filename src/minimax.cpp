@@ -148,7 +148,7 @@ namespace Minimax
             Moves::makeMove(newNode.board, currentMove.x, currentMove.y, currentNode.player);
 
             // new Player + Moves
-            newNode.player = nextValidPlayerMoves(newNode.validMoves, newNode.board, currentNode.player);
+            newNode.player = nextValidPlayerMoves(newNode.validMoves, newNode.board, currentNode.player, depth , maxDepth);
 
             bool isLeaf = false;
             // If game ended
@@ -276,7 +276,7 @@ namespace Minimax
         return;
     }
 
-    uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer) {
+    uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer, uint8_t depth, uint8_t maxDepth) {
         int8_t nextPlayer = currentPlayer + 1;
         if (nextPlayer > GameDetails::playerCount) {
             nextPlayer = 1;
@@ -300,7 +300,9 @@ namespace Minimax
             }
             //sort moves for pruning
             // TODO improve efficiency; not in leafs
-            sortMoves(validMoves, board, nextPlayer);
+            if(!(nextPlayer == 0) || !(depth + 1 >= maxDepth)){
+                sortMoves(validMoves, board, nextPlayer);
+            }
 
             return nextPlayer;
         } 
