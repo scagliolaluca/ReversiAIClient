@@ -35,7 +35,7 @@ namespace Minimax
     bool checkTimeLeft(const std::chrono::time_point<std::chrono::steady_clock> &stopTime);
     std::vector<int> getEvaluationVector(std::vector<Move> &moves, uint8_t **board, uint8_t player);
     void sortMoves(std::vector<Move> &moves, uint8_t **board, uint8_t player);
-    uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer);
+    uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer, uint8_t depth, uint8_t maxDepth);
 
 } // namespace Minimax
 

@@ -295,7 +295,7 @@ namespace Minimax
                 continue;
             }
             //sort moves for pruning
-            // TODO improve efficiency; not in leafs
+            //not in leafs
             if(!(nextPlayer == 0) || !(depth + 1 >= maxDepth)){
                 sortMoves(validMoves, board, nextPlayer);
             }
