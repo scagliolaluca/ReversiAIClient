@@ -9,4 +9,6 @@ struct Move {
     Move(uint8_t x, uint8_t y);
 };
 
+bool operator==(const Move& a, const Move& b);
+
 #endif  // MOVE_H

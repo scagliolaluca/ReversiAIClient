@@ -262,17 +262,13 @@ namespace Minimax
         resultVector = getEvaluationVector(moves, board, player);
 
         // Sort the array based on the values of the 'values' vector
-        std::sort(moves.begin(), moves.end(), [&resultVector, &moves](Move& a, Move& b) {
-            // Find the indices of 'a' and 'b' in the 'resultVector' vector
+        std::sort(moves.begin(), moves.end(), [=](const Move& a, const Move& b) {
+            // Find the indices of 'a' and 'b' in resultVector
             auto it_a = std::find(moves.begin(), moves.end(), a);
             auto it_b = std::find(moves.begin(), moves.end(), b);
 
             return resultVector[std::distance(moves.begin(), it_a)] > resultVector[std::distance(moves.begin(), it_b)];
         });
-
-        for (auto move: moves){
-            std::cout << "x: "  << (int)move.x << "| y: " << (int)move.y << "\n";
-            }
         return;
     }
 
