@@ -148,7 +148,7 @@ namespace Minimax
             Moves::makeMove(newNode.board, currentMove.x, currentMove.y, currentNode.player);
 
             // new Player + Moves
-            newNode.player = nextValidPlayerMoves(newNode.validMoves, newNode.board, currentNode.player, depth , maxDepth);
+            newNode.player = nextValidPlayerMoves(newNode.validMoves, newNode.board, currentNode.player);
 
             bool isLeaf = false;
             // If game ended
@@ -197,6 +197,10 @@ namespace Minimax
                 }
             } 
             else {
+                // sort moves for pruning (not in nodes before leafs)
+                if(depth + 2 < maxDepth){
+                    sortMoves(newNode.validMoves, board, newNode.player);
+                }
                 //Pruning -> pass down alpha and beta
                 newNode.alpha = currentNode.alpha;
                 newNode.beta = currentNode.beta;
@@ -272,7 +276,7 @@ namespace Minimax
         return;
     }
 
-    uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer, uint8_t depth, uint8_t maxDepth) {
+    uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer) {
         int8_t nextPlayer = currentPlayer + 1;
         if (nextPlayer > GameDetails::playerCount) {
             nextPlayer = 1;
@@ -293,11 +297,6 @@ namespace Minimax
                     nextPlayer = 1;
                 }
                 continue;
-            }
-            //sort moves for pruning
-            //not in leafs
-            if(!(nextPlayer == 0) || !(depth + 1 >= maxDepth)){
-                sortMoves(validMoves, board, nextPlayer);
             }
 
             return nextPlayer;
