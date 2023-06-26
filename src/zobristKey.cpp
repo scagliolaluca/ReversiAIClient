@@ -100,4 +100,9 @@ namespace ZobristKey
         h = h ^ zobristKeyMask[y][y][xorIn-1];
     }
 
+    void xorInOutPlayer(uint32_t& h, uint8_t xorOut, uint8_t xorIn) {
+        h = h ^ whosTurnMask[xorOut-1];
+        h = h ^ whosTurnMask[xorIn-1];
+    }
+
 } // namespace ZobristKey

@@ -66,7 +66,6 @@ namespace Minimax
 
         //TT -> calculate completely in root
         root.hash = ZobristKey::generateZobristValue(root.board, root.player);
-        std::cout << "Hash at beginning: " << root.hash << std::endl;
 
         uint8_t depth = 0;
         Move currentRootMove = root.validMoves.front();
@@ -84,7 +83,7 @@ namespace Minimax
         // Iterative DFS
         while (!nodeStack.empty()) {
 
-            std::cout << "Node stack not empty!" << std::endl;
+            //std::cout << "Node stack not empty!" << std::endl;
 
             if(!checkTimeLeft(stopTime)) {
                 std::cout << "No Time left, so break calculation and return with previous iteration" << std::endl;
@@ -92,17 +91,15 @@ namespace Minimax
             }
 
             Node &currentNode = nodeStack.top();
-            //std::cout << "Current node player " << int(currentNode.player) << " on depth " << int(depth) << std::endl;
-            std::cout << "Current node hash value: " << currentNode.hash << std::endl;
+            //std::cout << "Current node hash value: " << currentNode.hash << std::endl;
             // check TranspositionTable for this position
-            //uint32_t hash = ZobristKey::generateZobristValue(currentNode.board, currentNode.player);
             // This position was seen and calculated before
             if (TranspositionTable::alreadySeen(currentNode.hash)) {
                 TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(currentNode.hash);
-
+                //std::cout << "\n\nThis entry exists\n\n" << std::endl;
                 // The TT entry can be used, don't calculate deeper from this node
                 if (prevCalc->calculatedDepth - prevCalc->depth >= maxDepth - depth) {
-                    std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
+                    //std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
                     //std::cout << "Current MaxDepth: " << int(maxDepth) << " Current Depth: " << int(depth) << std::endl;
                     //std::cout << "X and Y: " << int(prevCalc->x) << int(prevCalc->y) << " This state was evaluated at depth:" << int(prevCalc->depth) << " Found Value: " << prevCalc->value << " at depth: " << int(prevCalc->calculatedDepth) << std::endl;
 
@@ -258,17 +255,19 @@ namespace Minimax
             Node newNode;
 
             newNode.hash = currentNode.hash;
-            std::cout << "New nodes hash: " << newNode.hash << std::endl;
 
             // new Board
             newNode.board = copy2DArr(currentNode.board, GameDetails::boardHeight, GameDetails::boardWidth);
             Moves::makeMove(newNode.board, currentMove.x, currentMove.y, currentNode.player, newNode.hash);
-            std::cout << "New nodes new hash: " << newNode.hash << std::endl;
-
-            //TODO: at this position the previous player has to be xorout and the new one xorin
 
             // new Player + Moves
             newNode.player = nextValidPlayerMoves(newNode.validMoves, newNode.board, currentNode.player);
+
+            // refresh movright in Hashvalue
+            ZobristKey::xorInOutPlayer(newNode.hash, newNode.player, currentNode.player);
+            //std::cout << "New nodes new hash after player refresh: " << newNode.hash << std::endl;
+
+
             bool isLeaf = false;
             // If game ended
             if (newNode.player == 0) {
@@ -385,7 +384,7 @@ namespace Minimax
             }
             // Leaf nodes are handled immediately -> aren't added to the stack
             if (isLeaf) {
-                std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << " with value: " << newNode.value << std::endl;
+                //std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << " with value: " << newNode.value << std::endl;
                 // Maximize
                 if (currentNode.player == playerNumber) {
                     if (newNode.value > currentNode.value) {
