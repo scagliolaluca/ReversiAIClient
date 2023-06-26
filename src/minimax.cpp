@@ -260,10 +260,8 @@ namespace Minimax
 
 
     void sortMoves(std::vector<Move> &moves, uint8_t **board, uint8_t player){
-        int vectorSize = moves.size();
         //create vector with values from evaluation function
-        std::vector<int> resultVector(vectorSize);
-        resultVector = getEvaluationVector(moves, board, player);
+        std::vector<int> resultVector = getEvaluationVector(moves, board, player);
 
         // Sort the array based on the values of the 'values' vector
         std::sort(moves.begin(), moves.end(), [=](const Move& a, const Move& b) {
