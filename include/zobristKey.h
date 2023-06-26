@@ -17,6 +17,7 @@ namespace ZobristKey
     void deleteWhosTurnMask();
     uint32_t *createWhosTurnMaskValues();
     uint32_t generateZobristValue(uint8_t **board, uint8_t player);
+    void xorInOut(uint32_t& h, uint8_t y, uint8_t x, uint8_t xorOut, uint8_t xorIn);
 
     template <class T>
     T*** createZeroInit3DArr(size_t sizeFirst, size_t sizeSecond, size_t sizeThird) {

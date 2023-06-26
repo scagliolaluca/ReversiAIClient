@@ -30,6 +30,7 @@ namespace Minimax
         bestFollowing = other.bestFollowing;
         moveToGetHere_x = other.moveToGetHere_x;
         moveToGetHere_y = other.moveToGetHere_y;
+        hash = other.hash;
     }
     Node::~Node() {
         delete2DArr(board, GameDetails::boardHeight);
@@ -63,6 +64,10 @@ namespace Minimax
         root.alpha = std::numeric_limits<float>::lowest();;
         root.beta = std::numeric_limits<float>::max();
 
+        //TT -> calculate completely in root
+        root.hash = ZobristKey::generateZobristValue(root.board, root.player);
+        std::cout << "Hash at beginning: " << root.hash << std::endl;
+
         uint8_t depth = 0;
         Move currentRootMove = root.validMoves.front();
         x = currentRootMove.x;
@@ -79,7 +84,7 @@ namespace Minimax
         // Iterative DFS
         while (!nodeStack.empty()) {
 
-            //std::cout << "Node stack not empty!" << std::endl;
+            std::cout << "Node stack not empty!" << std::endl;
 
             if(!checkTimeLeft(stopTime)) {
                 std::cout << "No Time left, so break calculation and return with previous iteration" << std::endl;
@@ -88,18 +93,18 @@ namespace Minimax
 
             Node &currentNode = nodeStack.top();
             //std::cout << "Current node player " << int(currentNode.player) << " on depth " << int(depth) << std::endl;
-
+            std::cout << "Current node hash value: " << currentNode.hash << std::endl;
             // check TranspositionTable for this position
-            uint32_t hash = ZobristKey::generateZobristValue(currentNode.board, currentNode.player);
+            //uint32_t hash = ZobristKey::generateZobristValue(currentNode.board, currentNode.player);
             // This position was seen and calculated before
-            if (TranspositionTable::alreadySeen(hash)) {
-                TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(hash);
+            if (TranspositionTable::alreadySeen(currentNode.hash)) {
+                TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(currentNode.hash);
 
                 // The TT entry can be used, don't calculate deeper from this node
                 if (prevCalc->calculatedDepth - prevCalc->depth >= maxDepth - depth) {
                     std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
-                    std::cout << "Current MaxDepth: " << int(maxDepth) << " Current Depth: " << int(depth) << std::endl;
-                    std::cout << "X and Y: " << int(prevCalc->x) << int(prevCalc->y) << " This state was evaluated at depth:" << int(prevCalc->depth) << " Found Value: " << prevCalc->value << " at depth: " << int(prevCalc->calculatedDepth) << std::endl;
+                    //std::cout << "Current MaxDepth: " << int(maxDepth) << " Current Depth: " << int(depth) << std::endl;
+                    //std::cout << "X and Y: " << int(prevCalc->x) << int(prevCalc->y) << " This state was evaluated at depth:" << int(prevCalc->depth) << " Found Value: " << prevCalc->value << " at depth: " << int(prevCalc->calculatedDepth) << std::endl;
 
                     // if first (root) node -> simply return
                     if (depth == 0) {
@@ -180,7 +185,7 @@ namespace Minimax
                 //std::cout << " Reached value: " << currentNode.value << " in depth: " << int(currentNode.bestFollowing.calculatedDepth) << std::endl;
 
                 //add Node to Hashmap
-                TranspositionTable::addEntry(hash, currentNode.bestFollowing.x, currentNode.bestFollowing.y, depth, calculatedDepth, compareVal);
+                TranspositionTable::addEntry(currentNode.hash, currentNode.bestFollowing.x, currentNode.bestFollowing.y, depth, calculatedDepth, compareVal);
 
                 --depth;
 
@@ -252,9 +257,15 @@ namespace Minimax
             }
             Node newNode;
 
+            newNode.hash = currentNode.hash;
+            std::cout << "New nodes hash: " << newNode.hash << std::endl;
+
             // new Board
             newNode.board = copy2DArr(currentNode.board, GameDetails::boardHeight, GameDetails::boardWidth);
-            Moves::makeMove(newNode.board, currentMove.x, currentMove.y, currentNode.player);
+            Moves::makeMove(newNode.board, currentMove.x, currentMove.y, currentNode.player, newNode.hash);
+            std::cout << "New nodes new hash: " << newNode.hash << std::endl;
+
+            //TODO: at this position the previous player has to be xorout and the new one xorin
 
             // new Player + Moves
             newNode.player = nextValidPlayerMoves(newNode.validMoves, newNode.board, currentNode.player);
@@ -262,27 +273,119 @@ namespace Minimax
             // If game ended
             if (newNode.player == 0) {
                 isLeaf = true;
+
+                // check TranspositionTable for this position
+                //uint32_t hash = ZobristKey::generateZobristValue(newNode.board, newNode.player);
+                // This position was seen and calculated before
+                if (TranspositionTable::alreadySeen(newNode.hash)) {
+                    TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(newNode.hash);
+                    //std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
+                    //std::cout << "Current MaxDepth: " << int(maxDepth) << " Current Depth: " << int(depth) << std::endl;
+                    //std::cout << "X and Y: " << int(prevCalc->x) << int(prevCalc->y) << " This state was evaluated at depth:" << int(prevCalc->depth) << " Found Value: " << prevCalc->value << " at depth: " << int(prevCalc->calculatedDepth) << std::endl;
+
+                    newNode.value = prevCalc->value;
+                    // Maximize
+                    if (currentNode.player == playerNumber) {
+                        if (prevCalc->value > currentNode.value) {
+                            currentNode.value = prevCalc->value;
+                            if (depth == 0) {
+                                x = currentRootMove.x;
+                                y = currentRootMove.y;
+                            }
+                            //Pruning -> set alpha to highest leaf node one depth above
+                            currentNode.alpha = prevCalc->value;
+                            // TT -> get data for best move from this node
+                            //std::cout << "Better than previous leave, so set bestFollowing in max" << std::endl;
+                            currentNode.bestFollowing.x = currentMove.x;
+                            currentNode.bestFollowing.y = currentMove.y;
+                            currentNode.bestFollowing.value = prevCalc->value;
+                            currentNode.bestFollowing.calculatedDepth = depth+1;
+                        }
+                    }
+                    // Minimize
+                    else {
+                        if (prevCalc->value < currentNode.value) {
+                            currentNode.value = prevCalc->value;
+                            //Pruning -> set beta to lowest leaf node one depth above
+                            currentNode.beta = prevCalc->value;
+                            // TT -> get data for best move from this node
+                            //std::cout << "Better than previous leave, so set bestFollowing in min" << std::endl;
+                            currentNode.bestFollowing.x = currentMove.x;
+                            currentNode.bestFollowing.y = currentMove.y;
+                            currentNode.bestFollowing.value = prevCalc->value;
+                            currentNode.bestFollowing.calculatedDepth = depth+1;
+                        }
+                    }
+                    continue;
+                }
                 newNode.value = Heuristics::evaluateEndState(newNode.board, playerNumber);
                 //std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
 
-                /*
-                // If game ended in depth 0 (needed in iterativeDeepening)
+
+                /*// If game ended in depth 0 (needed in iterativeDeepening)
                 if(depth == 0){
                     islastMove = true;
                     std::cout << "Depth: " << int(depth) << std::endl;
-                }
-                */
+                }*/
+
             }
             // If reached max depth
             else if (depth + 1 >= maxDepth) {
                 isLeaf = true;
+
+                // check TranspositionTable for this position
+                //uint32_t hash = ZobristKey::generateZobristValue(newNode.board, newNode.player);
+                // This position was seen and calculated before
+                if (TranspositionTable::alreadySeen(newNode.hash)) {
+                    TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(newNode.hash);
+                    //std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
+                    //std::cout << "Current MaxDepth: " << int(maxDepth) << " Current Depth: " << int(depth) << std::endl;
+                    //std::cout << "X and Y: " << int(prevCalc->x) << int(prevCalc->y) << " This state was evaluated at depth:" << int(prevCalc->depth) << " Found Value: " << prevCalc->value << " at depth: " << int(prevCalc->calculatedDepth) << std::endl;
+
+                    newNode.value = prevCalc->value;
+                    // Maximize
+                    if (currentNode.player == playerNumber) {
+                        if (prevCalc->value > currentNode.value) {
+                            currentNode.value = prevCalc->value;
+                            if (depth == 0) {
+                                x = currentRootMove.x;
+                                y = currentRootMove.y;
+                            }
+                            //Pruning -> set alpha to highest leaf node one depth above
+                            currentNode.alpha = prevCalc->value;
+                            // TT -> get data for best move from this node
+                            //std::cout << "Better than previous leave, so set bestFollowing in max" << std::endl;
+                            currentNode.bestFollowing.x = currentMove.x;
+                            currentNode.bestFollowing.y = currentMove.y;
+                            currentNode.bestFollowing.value = prevCalc->value;
+                            currentNode.bestFollowing.calculatedDepth = depth+1;
+                        }
+                    }
+                    // Minimize
+                    else {
+                        if (prevCalc->value < currentNode.value) {
+                            currentNode.value = prevCalc->value;
+                            //Pruning -> set beta to lowest leaf node one depth above
+                            currentNode.beta = prevCalc->value;
+                            // TT -> get data for best move from this node
+                            //std::cout << "Better than previous leave, so set bestFollowing in min" << std::endl;
+                            currentNode.bestFollowing.x = currentMove.x;
+                            currentNode.bestFollowing.y = currentMove.y;
+                            currentNode.bestFollowing.value = prevCalc->value;
+                            currentNode.bestFollowing.calculatedDepth = depth+1;
+                        }
+                    }
+                    reachedMaxDepth = true;
+                    continue;
+                }
+
                 newNode.value = heuristic(newNode.board, playerNumber);
                 //std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
                 reachedMaxDepth = true;
             }
             // Leaf nodes are handled immediately -> aren't added to the stack
             if (isLeaf) {
-                //std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << " with value: " << newNode.value << std::endl;
+                std::cout << "New leaf found after move: " << int(currentMove.x) << int(currentMove.y) << " with value: " << newNode.value << std::endl;
                 // Maximize
                 if (currentNode.player == playerNumber) {
                     if (newNode.value > currentNode.value) {
@@ -317,8 +420,8 @@ namespace Minimax
                 }
                 // Add leave to TT, but not all information available: (nextMove missing)
                 //Heuristics::printBoard(newNode.board);
-                uint32_t hash2 = ZobristKey::generateZobristValue(newNode.board, newNode.player);
-                TranspositionTable::addLeaveEntry(hash2, depth+1, depth+1, newNode.value);
+                //uint32_t hash2 = ZobristKey::generateZobristValue(newNode.board, newNode.player);
+                TranspositionTable::addLeaveEntry(newNode.hash, depth+1, depth+1, newNode.value);
             } 
             else {
                 //Pruning -> pass down alpha and beta

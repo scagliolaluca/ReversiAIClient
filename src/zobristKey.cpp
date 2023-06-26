@@ -90,4 +90,14 @@ namespace ZobristKey
         return h;
     }
 
+    void xorInOut(uint32_t& h, uint8_t y, uint8_t x, uint8_t xorOut, uint8_t xorIn) {
+        // if xorOut == 0, this field previously wasn't occupied, so no XORout
+        if (xorOut != 0) {
+            // XORout the old value by reXORing it in
+            h = h ^ zobristKeyMask[y][x][xorOut - 1];
+        }
+        // XORin the new value by XORing it in
+        h = h ^ zobristKeyMask[y][y][xorIn-1];
+    }
+
 } // namespace ZobristKey
