@@ -1,6 +1,7 @@
 #include "brsp.h"
 #include "heuristics.h"
 #include "moves.h"
+#include "minimax.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -48,7 +49,10 @@ namespace BRSP {
         if (depth == 0) { //terminal state check function? eh
             return heuristic(board, playerNumber);
         }
-        if (std::chrono::steady_clock::now() >= stopTime) {
+        //if (std::chrono::steady_clock::now() >= stopTime) {
+        //    throw std::runtime_error("not enough time");
+        //}
+        if(!Minimax::checkTimeLeft(stopTime)){
             throw std::runtime_error("not enough time");
         }
 
@@ -56,6 +60,7 @@ namespace BRSP {
         bool nextIsMaxPlayer = (playerNumber + 1) % GameDetails::playerCount == maxnumber;
         std::vector<Move> availableMoves;
         Moves::populateValidMoves(availableMoves, board, playerNumber);
+        Minimax::sortMoves(availableMoves,board,playerNumber);
 
         if (maximizingPlayer) {
             float bestValue = std::numeric_limits<float>::lowest();
@@ -73,10 +78,12 @@ namespace BRSP {
             float bestValue = std::numeric_limits<float>::max();
 
             if(normalMovesLeft == 0 || (normalMovesLeft > 0 && !nextIsMaxPlayer)){
-                int i = rand() % availableMoves.size(); //picking random move as special move
-                Move specialMove = availableMoves[i];
-                availableMoves.erase(availableMoves.begin()+i);
-                
+                //int i = rand() % availableMoves.size(); //picking random move as special move
+                //Move specialMove = availableMoves[i];
+                //availableMoves.erase(availableMoves.begin()+i);
+                Move specialMove = availableMoves[0];
+                availableMoves.erase(availableMoves.begin());
+
                 uint8_t** boardcopy = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
                 Moves::makeMove(boardcopy, specialMove.x, specialMove.y, playerNumber);
 

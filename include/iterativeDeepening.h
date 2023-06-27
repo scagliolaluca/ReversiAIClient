@@ -7,6 +7,7 @@
 #include <deque>
 
 #include "minimax.hpp"
+#include "brsp.h"
 
 namespace IterativeDeepening
 {

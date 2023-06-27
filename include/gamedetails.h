@@ -5,6 +5,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <stdexcept>
 
 #include "logging.h"
 #include "settings.h"

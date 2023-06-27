@@ -19,7 +19,8 @@ namespace IterativeDeepening
         while(timeForNextIteration(iterationDepth, stopTime, iterationDurations) && miniMaxReachedMaxDepth){
             auto iterationStart = std::chrono::steady_clock::now();
             // If Minimax returns true --> continueCalculation
-            if(Minimax::getMoveMinimax(tempx, tempy, miniMaxReachedMaxDepth, board, playerNumber, iterationDepth, heuristic, stopTime)){
+            //if(Minimax::getMoveMinimax(tempx, tempy, miniMaxReachedMaxDepth, board, playerNumber, iterationDepth, heuristic, stopTime)){
+            if(BRSP::getMoveBRSP(tempx, tempy, board, playerNumber, iterationDepth, heuristic, stopTime)){
                 std::cout << "Found x,y: " << int(tempx) << int(tempy) << " in depth " << int(iterationDepth) << std::endl;
                 x = tempx;
                 y = tempy;
