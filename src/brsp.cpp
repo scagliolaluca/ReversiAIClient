@@ -49,9 +49,10 @@ namespace BRSP {
         if (depth == 0) { //terminal state check function? eh
             return heuristic(board, playerNumber);
         }
-        //if (std::chrono::steady_clock::now() >= stopTime) {
-        //    throw std::runtime_error("not enough time");
-        //}
+        std::vector<Move> nextMoves;
+        if(Minimax::nextValidPlayerMoves(nextMoves,board,playerNumber)<1){
+            return Heuristics::evaluateEndState(board,playerNumber);
+        }
         if(!Minimax::checkTimeLeft(stopTime)){
             throw std::runtime_error("not enough time");
         }
@@ -78,9 +79,6 @@ namespace BRSP {
             float bestValue = std::numeric_limits<float>::max();
 
             if(normalMovesLeft == 0 || (normalMovesLeft > 0 && !nextIsMaxPlayer)){
-                //int i = rand() % availableMoves.size(); //picking random move as special move
-                //Move specialMove = availableMoves[i];
-                //availableMoves.erase(availableMoves.begin()+i);
                 Move specialMove = availableMoves[0];
                 availableMoves.erase(availableMoves.begin());
 
