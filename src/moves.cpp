@@ -1,4 +1,6 @@
 #include "moves.h"
+#include "ostream"
+#include "zobristKey.h"
 
 void Moves::getRandomMove(uint8_t& x, uint8_t& y, uint8_t** board, uint8_t playerNumber) {
     std::vector<Move> validMoves;
@@ -107,6 +109,24 @@ void Moves::makeMove(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber
     Moves::recolor(playerNumber, recolorVec);
 }
 
+void Moves::makeMove(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber, uint32_t& hash) {
+    board[y][x] = playerNumber;
+
+    // XOR the new placed stone in
+    ZobristKey::xorInOut(hash, y, x, 0, playerNumber);
+
+    std::vector<uint8_t*> recolorVec;
+    // iterate over directions
+    for (uint8_t i = 0; i < 8; i++) {
+        // if direction is validated mark all stones in this direction for recolor
+        if (Moves::validateDirection(board, x, y, playerNumber, i) > 0) {
+            markRecolor(board, x, y, playerNumber, i, recolorVec, hash);
+        }
+    }
+    Moves::recolor(playerNumber, recolorVec);
+}
+
+
 void Moves::markRecolor(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber, uint8_t direction, std::vector<uint8_t*>& markedTiles) {
     // no neighbors found
     if (!CurrentState::mapNeighbors[y][x]) {
@@ -139,6 +159,46 @@ void Moves::markRecolor(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNum
         }
         // push tile for recoloring
         markedTiles.push_back(&board[n.y][n.x]);
+    }
+}
+
+void Moves::markRecolor(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber, uint8_t direction, std::vector<uint8_t*>& markedTiles, uint32_t& hash) {
+    // no neighbors found
+    if (!CurrentState::mapNeighbors[y][x]) {
+        return;
+    }
+    // get first neighbor at direction i
+    Neighbor n = CurrentState::mapNeighbors[y][x][direction];
+    // check if no neighbor in direction
+    if (n.pos > 7) {
+        return;
+    }
+    // push first neighbor in given direction to vec
+    markedTiles.push_back(&board[n.y][n.x]);
+
+    // if stone gets marked for change, XORout of hash and XORin the new player
+    ZobristKey::xorInOut(hash, n.y, n.x, board[n.y][n.x], playerNumber);
+
+    // set all the upcoming neighbors to playerNumber until playerNumber comes
+    while (true) {
+        // should not occure (at least the tile you came from should be a neighbor)
+        if (!CurrentState::mapNeighbors[n.y][n.x]) {
+            return;
+        }
+        // get next Neighbor in the opposite direction you came from
+        n = CurrentState::mapNeighbors[n.y][n.x][oppositeDirectionLookup[n.pos]];
+        // check if no neighbor in direction
+        if (n.pos > 7) {
+            return;
+        }
+        // if value in boardArr is playerNumber -> recoloring for the given direction done
+        if (board[n.y][n.x] == playerNumber) {
+            return;
+        }
+        // push tile for recoloring
+        markedTiles.push_back(&board[n.y][n.x]);
+        // if stone gets marked for change, XORout of hash and XORin the new player
+        ZobristKey::xorInOut(hash, n.y, n.x, board[n.y][n.x], playerNumber); // are x and y the right way around???
     }
 }
 

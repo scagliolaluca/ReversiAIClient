@@ -1,5 +1,4 @@
 #include "iterativeDeepening.h"
-
 #include <math.h>
 #include <iostream>
 
@@ -19,6 +18,7 @@ namespace IterativeDeepening
         while(timeForNextIteration(iterationDepth, stopTime, iterationDurations) && miniMaxReachedMaxDepth){
             auto iterationStart = std::chrono::steady_clock::now();
             // If Minimax returns true --> continueCalculation
+
             if(Minimax::getMoveMinimax(tempx, tempy, miniMaxReachedMaxDepth, board, playerNumber, iterationDepth, heuristic, stopTime)){
                 std::cout << "Found x,y: " << int(tempx) << int(tempy) << " in depth " << int(iterationDepth) << std::endl;
                 x = tempx;
@@ -44,7 +44,7 @@ namespace IterativeDeepening
         //calculate left time
         auto currentTime = std::chrono::steady_clock::now();
         int64_t timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - currentTime).count();
-        std::cout << "\nTime left before " << int(iterationDepth) << " depth is\t" << timeLeft << std::endl;
+        std::cout << "\n=========================================== Time left before " << int(iterationDepth) << " depth is\t" << timeLeft << " ===========================================" << std::endl;
 
         std::cout << "Last iteration:\t" << iterationDurations[0].count() * 1000 << "ms" << std::endl;
 
