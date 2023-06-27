@@ -11,7 +11,8 @@
 #include <iostream>
 #include <algorithm> 
 #include <vector> 
-#include <numeric> 
+#include <numeric>
+#include <ranges>
 
 namespace Minimax
 {
@@ -423,6 +424,10 @@ namespace Minimax
                 TranspositionTable::addLeaveEntry(newNode.hash, depth+1, depth+1, newNode.value);
             } 
             else {
+                // sort moves for pruning (not in nodes before leafs)
+                if(depth + 2 < maxDepth){
+                    sortMoves(newNode.validMoves, board, newNode.player);
+                }
                 //Pruning -> pass down alpha and beta
                 newNode.alpha = currentNode.alpha;
                 newNode.beta = currentNode.beta;
@@ -467,6 +472,41 @@ namespace Minimax
         }
     }
 
+    std::vector<int> getEvaluationVector(std::vector<Move> &moves, uint8_t **board, uint8_t player){
+        int vectorSize = moves.size();
+        std::vector<int> resultVector(vectorSize); 
+
+        for (int i = 0; i < vectorSize; i++) {
+            //copy board
+            uint8_t** boardCopy = copy2DArr(board, GameDetails::boardHeight, GameDetails::boardWidth);
+
+            //ealuate board after move
+            Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
+            resultVector[i] = Heuristics::getScore(boardCopy, player);
+
+            // Delete copy
+            delete2DArr(boardCopy, GameDetails::boardHeight);
+        }
+
+        return resultVector;
+    }
+
+
+    void sortMoves(std::vector<Move> &moves, uint8_t **board, uint8_t player){
+        //create vector with values from evaluation function
+        std::vector<int> resultVector = getEvaluationVector(moves, board, player);
+
+        // Sort the array based on the values of the 'values' vector
+        std::sort(moves.begin(), moves.end(), [=](const Move& a, const Move& b) {
+            // Find the indices of 'a' and 'b' in resultVector
+            auto it_a = std::find(moves.begin(), moves.end(), a);
+            auto it_b = std::find(moves.begin(), moves.end(), b);
+
+            return resultVector[std::distance(moves.begin(), it_a)] > resultVector[std::distance(moves.begin(), it_b)];
+        });
+        return;
+    }
+
     uint8_t nextValidPlayerMoves(std::vector<Move> &validMoves, uint8_t **board, uint8_t currentPlayer) {
         int8_t nextPlayer = currentPlayer + 1;
         if (nextPlayer > GameDetails::playerCount) {
@@ -488,56 +528,10 @@ namespace Minimax
                 }
                 continue;
             }
-            //sort moves for pruning
-            // TODO improve efficiency; not in leafs
-            sortMoves(validMoves, board, nextPlayer);
+
             return nextPlayer;
         } 
 
         return 0;
-    }
-
-    void sortMoves(std::vector<Move> &moves, uint8_t **board, uint8_t player){
-        int vectorSize = moves.size();
-        //create vector with values from evaluation function
-        std::vector<int> resultVector(vectorSize);
-        for (int i = 0; i < vectorSize; i++) {
-
-            //copy board
-            uint8_t** boardCopy = new uint8_t*[GameDetails::boardHeight];
-
-            for (int i = 0; i < GameDetails::boardHeight; i++) {
-                boardCopy[i] = new uint8_t[GameDetails::boardWidth];
-            }
-
-            for(int j=0; j<GameDetails::boardHeight; j++) {
-                memcpy(boardCopy[j], board[j], GameDetails::boardWidth*sizeof(uint8_t));
-            }
-
-            Moves::makeMove(boardCopy, moves[i].x, moves[i].y, player);
-            resultVector[i] = Heuristics::getScore(boardCopy, GameDetails::playerNumber);
-            // Delete the array created
-            for (int i = 0; i < GameDetails::boardHeight; i++)
-                delete[] boardCopy[i];
-            delete[] boardCopy;
-        }
-        // Create a vector of indices
-        std::vector<short int> indices(vectorSize);
-        std::iota(indices.begin(), indices.end(), 0); 
-
-        // Sort the indices based on the values of the priorities vector
-        std::sort(indices.begin(), indices.end(), [&](short int a, short int b) {
-            return resultVector[a] < resultVector[b];
-        });
-
-        // Rearrange the moves based on the sorted indices
-        std::vector<Move> sortedMoves;
-        sortedMoves.reserve(vectorSize);
-        for (size_t i = 0; i < indices.size(); ++i) {
-            sortedMoves.push_back(moves[indices[i]]);
-        }
-        moves.assign(sortedMoves.begin(), sortedMoves.end());
-        //std::cout << "sorting:" << (int)moves[0].x << "/////" << (int)moves[0].y<< std::endl;
-        return;
     }
 } // namespace Minimax

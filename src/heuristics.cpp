@@ -72,16 +72,6 @@ namespace Heuristics
     float normalizedHeuristic(uint8_t** board, uint8_t playerNumber) {
         const int PC = GameDetails::playerCount;
 
-        // Weights for the heuristic parts
-        // TODO: adjust depending on game state
-        int w_myPieces = 1;
-        int w_myPieceValue = 1;
-        int w_myMoves = 1;
-        // Enemy weights can be set to 0 because current normalization takes enemy values for own values into account
-        int w_enemyPieces = 0;
-        int w_enemyPieceValue = 0;
-        int w_enemyMoves = 0;
-
         // Data for heuristic calculation
         std::vector<float> rawScores;
         std::vector<float> weightedScores;
@@ -122,18 +112,42 @@ namespace Heuristics
         float h_enemyMoves = normalizedOthersHeuristicValue(enemyMoves, totalMoves, PC);
 
         // Blend heuristics
+        float progress = (float)totalPieces / MapPreprocessing::nReachableTiles;
+        Weights w = heuristicWeightsForGameProgress(progress);
         float h = 0;
-        h += w_myPieces * h_myPieces;
-        h += w_enemyPieces * h_enemyPieces;
-        h += w_myPieceValue * h_myPieceValue;
-        h += w_enemyPieceValue * h_enemyPieceValue;
-        h += w_myMoves * h_myMoves;
-        h += w_enemyMoves * h_enemyMoves;
-        h /= (w_myPieces + w_enemyPieces + w_myMoves + w_enemyMoves);
+        h += w.myPieces * h_myPieces;
+        h += w.enemyPieces * h_enemyPieces;
+        h += w.myPieceValue * h_myPieceValue;
+        h += w.enemyPieceValue * h_enemyPieceValue;
+        h += w.myMoves * h_myMoves;
+        h += w.enemyMoves * h_enemyMoves;
+        h /= (w.myPieces + w.enemyPieces + w.myPieceValue + w.enemyPieceValue + w.myMoves + w.enemyMoves);
 
         return h;
     }
 
+    Weights heuristicWeightsForGameProgress(float progress) {
+        Weights w;
+
+        // Enemy weights can be left at 0 because current normalization takes enemy values for own values into account
+        if (progress <= 0.2f) {
+            w.myPieces = 1;
+            w.myPieceValue = 1;
+            w.myMoves = 2;
+        }
+        else if (progress <= 0.9f) {
+            w.myPieces = 1;
+            w.myPieceValue = 1;
+            w.myMoves = 1;
+        }
+        else {
+            w.myPieces = 1;
+            w.myPieceValue = 0;
+            w.myMoves = 1;
+        }
+
+        return w;
+    }
     float normalizedMyHeuristicValue(float myValue, float totalValue, uint8_t playerCount) {
         float contribution = myValue / totalValue;
         if (contribution <= (float)1 / playerCount) {
