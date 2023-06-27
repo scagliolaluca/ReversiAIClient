@@ -78,12 +78,28 @@ void makeMove(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber);
  * @param direction direction in which to look for recolor
  * @param[out] markedTiles return vector of pointers to marked tiles on the boardArr
  */
+
+void makeMove(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber, uint32_t& hash);
+
+/** like makeMove above, just with TranspositionTable functionality
+ * @param board gameboard on which to recolor
+ * @param x x-coordinate of the move
+ * @param y y-coordinate of the move
+ * @param playerNumber player for whom the recolor is done
+ * @param direction direction in which to look for recolor
+ * @param[out] markedTiles return vector of pointers to marked tiles on the boardArr
+ * @param hash is the current hash value of board
+ */
+
 void markRecolor(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber, uint8_t direction, std::vector<uint8_t*>& markedTiles);
 
 /** @brief recolor all marked tiles
  * @param playerNumber player for whom the recolor is done
  * @param markedTiles vector of pointers to marked tiles on the boardArr
  */
+
+void markRecolor(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber, uint8_t direction, std::vector<uint8_t*>& markedTiles, uint32_t& hash);
+
 void recolor(uint8_t playerNumber, std::vector<uint8_t*>& markedTiles);
 
 }  // namespace Moves

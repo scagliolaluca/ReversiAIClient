@@ -11,6 +11,7 @@
 namespace MapPreprocessing
 {
     float **tileValueMask = nullptr;
+    int nReachableTiles = 0;
 
     void createValueMask() {
         if (tileValueMask) {
@@ -124,5 +125,126 @@ namespace MapPreprocessing
             }
         }
         return;
+    }
+
+    void calculateReachableTiles() {
+        int8_t **reachable = create2DArr<int8_t>(GameDetails::boardHeight, GameDetails::boardWidth);
+        std::deque<std::pair<uint8_t, uint8_t>> candidates;
+
+        // Initialize with starting positions
+        initializeStartingTiles(reachable, candidates);
+
+        while (!candidates.empty()) {
+            auto candidate = candidates.front();
+            candidates.pop_front();
+
+            uint8_t x = candidate.first;
+            uint8_t y = candidate.second;
+
+            if (isTileReachable(x, y, reachable)) {
+                reachable[y][x] = 1;
+                addNewCandidates(x, y, reachable, candidates);
+            }
+        }
+        /*
+        // Debug Output
+        for (uint i = 0; i < GameDetails::boardHeight; ++i) {
+            for (uint j = 0; j < GameDetails::boardWidth; ++j) {
+                int val = reachable[i][j];
+                if (val != -1) {
+                    std::cout << val << " ";
+                }
+                else {
+                    std::cout << "-" << " ";
+                }
+            }
+            std::cout << std::endl;
+        }
+        */
+        nReachableTiles = countReachable(reachable);
+
+        delete2DArr(reachable, GameDetails::boardHeight);
+        return;
+    }
+
+    void initializeStartingTiles(int8_t **reachableTiles, std::deque<std::pair<uint8_t, uint8_t>> &candidates) {
+        for (uint i = 0; i < GameDetails::boardHeight; ++i) {
+            for (uint j = 0; j < GameDetails::boardWidth; ++j) {
+                uint8_t boardValue = CurrentState::boardArr[i][j];
+                if (boardValue >= 1 && boardValue <= GameDetails::playerCount) {
+                    reachableTiles[i][j] = 1;
+                    if (!CurrentState::mapNeighbors[i][j]) {
+                        continue;
+                    }
+                    for (uint k = 0; k < 8; ++k) {
+                        Neighbor n = CurrentState::mapNeighbors[i][j][k];
+                        
+                        // Skip invalid neighbors
+                        if (n.pos > 7) {
+                            continue;
+                        }
+                        
+                        candidates.push_back({n.x, n.y});
+                    }
+                }
+                else if (boardValue == 13) {
+                    reachableTiles[i][j] = -1;
+                }
+                else {
+                    reachableTiles[i][j] = 0;
+                }
+            }
+        }
+        return;
+    }
+    void addNewCandidates(uint8_t x, uint8_t y, int8_t **reachableTiles, std::deque<std::pair<uint8_t, uint8_t>> &candidates) {
+        for (int i = 0; i < 8; ++i) {
+            Neighbor n = CurrentState::mapNeighbors[y][x][i];
+            if (n.pos > 7) {
+                continue;
+            }
+            if (reachableTiles[n.y][n.x] == 0) {
+                candidates.push_front({n.x, n.y});
+            }
+            else if (reachableTiles[n.y][n.x] == 1) {
+                Neighbor n2 = CurrentState::mapNeighbors[n.y][n.x][i];
+                if (n.pos <= 7 && reachableTiles[n2.y][n2.x] == 0) {
+                    candidates.push_front({n2.x, n2.y});
+                }
+            }
+        }
+        return;
+    }
+    bool isTileReachable(uint8_t x, uint8_t y, int8_t **reachableTiles) {
+        if (reachableTiles[y][x] == -1) {
+            return false;
+        }
+        if (reachableTiles[y][x] == 1) {
+            return true;
+        }
+
+        for (int i = 0; i < 8; ++i) {
+            Neighbor n = CurrentState::mapNeighbors[y][x][i];
+
+            // Designate a tile as reachable, if 2 neighbors in a row are reachable
+            if (n.pos <= 7 && reachableTiles[n.y][n.x] == 1) {
+                Neighbor n2 = CurrentState::mapNeighbors[n.y][n.x][i];
+                if (n2.pos <= 7 && reachableTiles[n2.y][n2.x] == 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    int countReachable(int8_t **reachableTiles) {
+        int counter = 0;
+        for (uint i = 0; i < GameDetails::boardHeight; ++i) {
+            for (uint j = 0; j < GameDetails::boardWidth; ++j) {
+                if (reachableTiles[i][j] == 1) {
+                    ++counter;
+                }
+            }
+        }
+        return counter;
     }
 } // namespace MapPreprocessing
