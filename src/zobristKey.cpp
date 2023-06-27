@@ -42,8 +42,11 @@ namespace ZobristKey
                 if (CurrentState::boardArr[i][j] == 13) {
                     continue;
                 }
-                uint32_t *arr = new uint32_t[]{distrib(rng), distrib(rng)};
-                mask[i][j] = arr;
+                for (int k = 0; k < GameDetails::playerCount; k++) {
+                    mask[i][j][k] = distrib(rng);
+                }
+                //uint32_t *arr = new uint32_t[]{distrib(rng), distrib(rng)};
+                //mask[i][j] = arr;
             }
         }
         return mask;
@@ -80,10 +83,7 @@ namespace ZobristKey
             for (int j = 0; j < GameDetails::boardWidth; j++) {
                 // for all fields that have a piece
                 if (board[i][j] > 0 and board[i][j] <= GameDetails::playerCount) {
-                    //std::cout << std::bitset<32>(h) << "\t" << h << std::endl;
-                    //std::cout << std::bitset<32>(zobristKeyMask[i][j][board[i][j]-1]) << "\t" << zobristKeyMask[i][j][board[i][j]-1] << std::endl;
-                    h = h ^ zobristKeyMask[i][j][board[i][j]-1];
-                    //std::cout << std::bitset<32>(h) << "\t" << h << "\t" << &h << std::endl;
+                   h = h ^ zobristKeyMask[i][j][board[i][j]-1];
                 }
             }
         }
@@ -97,7 +97,7 @@ namespace ZobristKey
             h = h ^ zobristKeyMask[y][x][xorOut - 1];
         }
         // XORin the new value by XORing it in
-        h = h ^ zobristKeyMask[y][y][xorIn-1];
+        h = h ^ zobristKeyMask[y][x][xorIn-1];
     }
 
     void xorInOutPlayer(uint32_t& h, uint8_t xorOut, uint8_t xorIn) {
