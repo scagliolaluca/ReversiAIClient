@@ -114,7 +114,6 @@ void Moves::makeMove(uint8_t** board, uint8_t x, uint8_t y, uint8_t playerNumber
 
     // XOR the new placed stone in
     ZobristKey::xorInOut(hash, y, x, 0, playerNumber);
-
     std::vector<uint8_t*> recolorVec;
     // iterate over directions
     for (uint8_t i = 0; i < 8; i++) {
