@@ -13,7 +13,7 @@ namespace ZobristKey
     uint32_t *whosTurnMask = nullptr;
     std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<uint32_t> distrib(0, LONG_MAX);
+    std::uniform_int_distribution<uint32_t> distrib(0, UINT32_MAX);
 
     void createZobristKeyMask() {
         std::cout << "Create Zobrist Key Mask..." << std::endl;

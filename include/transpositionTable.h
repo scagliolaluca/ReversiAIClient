@@ -12,7 +12,7 @@ namespace TranspositionTable
         uint32_t *zobristkey = nullptr;
         uint8_t x, y;
         float value;
-        uint8_t depth = UCHAR_MAX;
+        uint8_t depth = UINT8_MAX;
         uint8_t calculatedDepth;
     };
 

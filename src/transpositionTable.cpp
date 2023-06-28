@@ -4,7 +4,7 @@
 
 namespace TranspositionTable
 {
-    const uint16_t size = UINT_MAX;
+    const uint16_t size = UINT16_MAX;
     Entry *entries = nullptr;
 
     void createTranspositionTable() {
