@@ -1,0 +1,2 @@
+Jetzt: comp1_g3_2p.map, comp2_g3_3p.map
+Später: comp3_g3_2p.map, comp4_g3_4p.map
