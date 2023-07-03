@@ -7,11 +7,43 @@
 #include <math.h>
 
 #include "debugUtils.hpp"
+#include "mapPreprocessing.hpp"
+#include "zobristKey.h"
+#include "transpositionTable.h"
 
 namespace MapPreprocessing
 {
     float **tileValueMask = nullptr;
     int nReachableTiles = 0;
+
+    void runPreprocessing() {
+        #ifdef LOAD_LOGGING
+            std::cout << "\nCalculate reachable tiles...\n";
+        #endif
+
+            MapPreprocessing::calculateReachableTiles();
+
+        #ifdef LOAD_LOGGING
+            std::cout << "Reachable tiles successfully calculated\n";
+            std::cout << "\nCreate value mask...\n";
+        #endif
+
+            MapPreprocessing::createValueMask();
+            ZobristKey::createZobristKeyMask();
+            ZobristKey::createWhosTurnMask();
+            TranspositionTable::createTranspositionTable();
+
+        #ifdef LOAD_LOGGING
+            std::cout << "Value mask created:\n";
+            DebugUtils::printArray(MapPreprocessing::tileValueMask, GameDetails::boardHeight, GameDetails::boardWidth);
+            std::cout << "ZobristKey mask created:\n";
+            DebugUtils::printArray(ZobristKey::zobristKeyMask, GameDetails::boardHeight, GameDetails::boardWidth, GameDetails::playerCount);
+            std::cout << "Zobrist Key for players created:\n";
+            DebugUtils::printArray(ZobristKey::whosTurnMask, GameDetails::playerCount);
+            std::cout << "Transposition Table created!\n";
+        #endif
+        return;
+    }
 
     void createValueMask() {
         if (tileValueMask) {

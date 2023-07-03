@@ -25,6 +25,7 @@ extern uint16_t moveCount;
 extern uint8_t** boardArr;
 extern Neighbor*** mapNeighbors;
 extern Player* playerArr;
+extern bool preprocessingNeeded;
 
 /** @brief creates the board array with GameDetails::boardWidth and GameDetails::boardHeight
  */

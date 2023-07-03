@@ -8,6 +8,8 @@ namespace MapPreprocessing
     extern float **tileValueMask;
     extern int nReachableTiles;
 
+    void runPreprocessing();
+
     void createValueMask();
     void deleteValueMask();
     float **createRawValues();

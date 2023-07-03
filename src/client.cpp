@@ -3,6 +3,7 @@
 #include "minimax.hpp"
 #include "heuristics.h"
 #include "iterativeDeepening.h"
+#include "mapPreprocessing.hpp"
 
 #define	SERVER_CLOSED_CONNECTION 0
 #define SERVER_TRANSMITTED_MAP 2
@@ -52,7 +53,7 @@ void Client::runClient() {
 #ifdef CLIENT_LOGGING
                 std::cout << "Map successfully loaded.\n\n";
 #endif
-
+                CurrentState::preprocessingNeeded = true;
                 delete[] msg;
                 break;
             }
@@ -70,9 +71,15 @@ void Client::runClient() {
 #ifdef CLIENT_LOGGING
                 std::cout << "\n\n======= Move " << std::setw(4) << ++CurrentState::moveCount << " =======\n";
 #endif
-                // get timelimit and/or search depth (basic client always makes a random move)
+                // get timelimit and/or search depth
                 CurrentState::timelimit = (msg[0] << 24) + (msg[1] << 16) + (msg[2] << 8) + msg[3];
                 CurrentState::searchDepth = msg[4];
+
+                auto startTime = std::chrono::steady_clock::now();
+                if (CurrentState::preprocessingNeeded) {
+                    CurrentState::preprocessingNeeded = false;
+                    MapPreprocessing::runPreprocessing();
+                }
 
                 if (CurrentState::timelimit) {
                     // searchTime given
@@ -80,7 +87,6 @@ void Client::runClient() {
                     std::cout << "== Timelimit: " << CurrentState::timelimit << "ms ==\n"
                               << "Searching for move...\n";
 #endif
-                    auto startTime = std::chrono::steady_clock::now();
                     auto stopTime = startTime + std::chrono::milliseconds(CurrentState::timelimit);
                     IterativeDeepening::getMoveIterativeDeepening(x, y, CurrentState::boardArr, GameDetails::playerNumber, Heuristics::normalizedHeuristic, stopTime);
 #ifdef CLIENT_LOGGING
@@ -95,7 +101,6 @@ void Client::runClient() {
 #ifdef CLIENT_LOGGING
                     std::cout << "== Search depth: " << int(CurrentState::searchDepth) << " ==\n"
                               << "Searching for move...\n";
-                    auto startTime = std::chrono::steady_clock::now();
 #endif
                     Minimax::getMoveMinimax(x, y, CurrentState::boardArr, GameDetails::playerNumber, CurrentState::searchDepth, Heuristics::normalizedHeuristic);
 #ifdef CLIENT_LOGGING

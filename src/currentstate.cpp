@@ -10,6 +10,7 @@ uint16_t moveCount = 0;
 uint8_t** boardArr = nullptr;
 Neighbor*** mapNeighbors = nullptr;
 Player* playerArr = nullptr;
+bool preprocessingNeeded = true;
 }  // namespace CurrentState
 
 void CurrentState::createBoardArr() {
