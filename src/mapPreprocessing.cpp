@@ -50,8 +50,6 @@ namespace MapPreprocessing
             deleteValueMask();
         }
         float **mask = createRawValues();
-        //DebugUtils::printArray(mask, GameDetails::boardHeight, GameDetails::boardWidth);
-        //std::cout << std::endl;
         deductNeighbors(mask);
         tileValueMask = mask;
 
@@ -178,21 +176,7 @@ namespace MapPreprocessing
                 addNewCandidates(x, y, reachable, candidates);
             }
         }
-        /*
-        // Debug Output
-        for (uint i = 0; i < GameDetails::boardHeight; ++i) {
-            for (uint j = 0; j < GameDetails::boardWidth; ++j) {
-                int val = reachable[i][j];
-                if (val != -1) {
-                    std::cout << val << " ";
-                }
-                else {
-                    std::cout << "-" << " ";
-                }
-            }
-            std::cout << std::endl;
-        }
-        */
+
         nReachableTiles = countReachable(reachable);
 
         delete2DArr(reachable, GameDetails::boardHeight);

@@ -174,9 +174,6 @@ namespace Heuristics
         heuristic += getMovecount(board, playerNumber);
         heuristic -= getScoreEnemyMoves(board, playerNumber);
 
-        // Maybe remove: (Expensive and maybe not so helpful)
-        // heuristic += getScoreTakeEnemy(board, playerNumber);
-
         return heuristic;
     }
 

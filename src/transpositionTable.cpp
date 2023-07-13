@@ -51,7 +51,6 @@ namespace TranspositionTable
             // clash with older entry --> TODO: Add some better logic here
             else {
                 if (depth < entry->depth){
-                    //std::cout << "Overwrite, because ours is at lower depth" << std::endl;
                     entry->depth = depth;
                     entry->calculatedDepth = calculatedDepth;
                     *entry->zobristkey = zobrist;

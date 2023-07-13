@@ -45,8 +45,6 @@ namespace ZobristKey
                 for (int k = 0; k < GameDetails::playerCount; k++) {
                     mask[i][j][k] = distrib(rng);
                 }
-                //uint32_t *arr = new uint32_t[]{distrib(rng), distrib(rng)};
-                //mask[i][j] = arr;
             }
         }
         return mask;

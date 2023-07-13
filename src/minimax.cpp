@@ -74,17 +74,8 @@ namespace Minimax
         y = currentRootMove.y;
         reachedMaxDepth = false;
 
-        /*
-        std::cout << "Moves (root):" << std::endl;
-        for (auto &element : nodeStack.top().validMoves) {
-            std::cout << "X = " << (int)element.x << ", Y = " << (int)element.y << std::endl;
-        }
-        */
-
         // Iterative DFS
         while (!nodeStack.empty()) {
-
-            //std::cout << "Node stack not empty!" << std::endl;
 
             if(!checkTimeLeft(stopTime)) {
                 std::cout << "No Time left, so break calculation and return with previous iteration" << std::endl;
@@ -98,7 +89,6 @@ namespace Minimax
                 TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(currentNode.hash);
                 // The TT entry can be used, don't calculate deeper from this node, update parent nodes
                 if (prevCalc->calculatedDepth - prevCalc->depth >= maxDepth - depth) {
-                    //std::cout << " = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
 
                     // if first (root) node -> simply return
                     if (depth == 0) {
@@ -161,7 +151,6 @@ namespace Minimax
 
             // All moves done
             if (!currentNode.hasValidMoves()) {
-                //std::cout << "Node finished for player " << (int)currentNode.player << " on depth " << (int)depth << std::endl;
                 if (depth == 0) {
                     //add first Node to TT too???
                     break;
@@ -263,7 +252,6 @@ namespace Minimax
                 // This position was seen and calculated before
                 if (TranspositionTable::alreadySeen(newNode.hash)) {
                     TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(newNode.hash);
-                    //std::cout << "= = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
 
                     newNode.value = prevCalc->value;
                     // Maximize
@@ -299,14 +287,6 @@ namespace Minimax
                     continue;
                 }
                 newNode.value = Heuristics::evaluateEndState(newNode.board, playerNumber);
-                //std::cout << "Leaf node (game ended) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
-
-
-                /*// If game ended in depth 0 (needed in iterativeDeepening)
-                if(depth == 0){
-                    islastMove = true;
-                    std::cout << "Depth: " << int(depth) << std::endl;
-                }*/
 
             }
             // If reached max depth
@@ -317,7 +297,6 @@ namespace Minimax
                 // This position was seen and calculated before
                 if (TranspositionTable::alreadySeen(newNode.hash)) {
                     TranspositionTable::Entry *prevCalc = TranspositionTable::getEntry(newNode.hash);
-                    //std::cout << "\n = = = = = = = = = = = = = = = = = = We could use this entry and safe time not calculating further = = = = = = = = = = = = = =" << std::endl;
 
                     newNode.value = prevCalc->value;
                     // Maximize
@@ -355,7 +334,6 @@ namespace Minimax
                 }
 
                 newNode.value = heuristic(newNode.board, playerNumber);
-                //std::cout << "Leaf node (max depth reached) after player " << (int)currentNode.player << " on depth " << (int)depth + 1 << std::endl;
                 reachedMaxDepth = true;
             }
             // Leaf nodes are handled immediately -> aren't added to the stack
